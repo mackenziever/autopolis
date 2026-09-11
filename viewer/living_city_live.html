@@ -787,6 +787,10 @@ function restoreOutdoorView(){
   agentsGroup.visible = true;
   grid.visible = true;
   gridGlow.visible = true;
+  for(const site of constructionSites.values()){
+    if(site.mesh) site.mesh.visible = true;
+    if(site.label) site.label.visible = true;
+  }
 
   controls.enabled = true;
   controls.enableRotate = true;
@@ -840,6 +844,12 @@ function enterBuilding(b){
   // keep grid subtle indoors
   grid.visible = false;
   gridGlow.visible = false;
+  // Cantieri: aste/gru sottili viste da distanza ~0 creano un fascio enorme
+  // in prospettiva — nascosti finché si resta dentro un edificio.
+  for(const site of constructionSites.values()){
+    if(site.mesh) site.mesh.visible = false;
+    if(site.label) site.label.visible = false;
+  }
 
   controls.minDistance = 0.3;
   controls.maxDistance = 8;
