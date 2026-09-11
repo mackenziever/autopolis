@@ -1,0 +1,18 @@
+[project]
+name = "civitas-core"
+version = "0.1.0"
+description = "Deterministic headless city simulation for event-driven AI agents"
+requires-python = ">=3.11"
+dependencies = ["numpy>=2.0,<3", "msgpack>=1.0,<2"]
+[project.optional-dependencies]
+prod = ["uvloop>=0.21; platform_system != 'Windows'", "rustworkx>=0.16", "usearch>=2.16", "polars>=1.0", "pyzmq>=26", "litellm>=1.60"]
+test = ["pytest>=8,<10", "pytest-asyncio>=0.24,<1"]
+e2e = ["pytest>=8,<10", "pytest-playwright>=0.5,<1", "playwright>=1.40"]
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+norecursedirs = ["tests/e2e"]
+markers = [
+  "e2e: browser end-to-end tests (require playwright chromium)",
+  "slow: load tests lunghi (es. 1M tick); esclusi dal default CI se filtrati",
+]

@@ -1,0 +1,43 @@
+{
+  "agents": 5,
+  "created_unix": 1789033968.2857263,
+  "extra": {
+    "delta_log": {
+      "delta_events": 358975,
+      "deltas": 99833,
+      "full_events": 835,
+      "keyframes": 167
+    },
+    "hmac": null,
+    "llm": {
+      "budget_denied": 0,
+      "errors": 0,
+      "fallback": 832,
+      "input_tokens": 0,
+      "live": 0,
+      "output_tokens": 0,
+      "replay": 0
+    },
+    "perf": {
+      "cognitive_worker": null,
+      "log_bytes": 50320187,
+      "overruns": 0,
+      "path_cache": {
+        "hits": 7395,
+        "misses": 2506,
+        "size": 387
+      },
+      "zmq_dropped": 0
+    },
+    "spatial_backend": "python",
+    "spatial_hash": true
+  },
+  "fingerprint": "16a6bcf64e7d936d",
+  "log_path": "data/load_100k.msgpack",
+  "log_sha256": "33c0901bd96850b770905117279452ff68908d3c56011cf45ed59708896b9fe2",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.14.6",
+  "schema": 1,
+  "seed": 42,
+  "ticks_completed": 100000
+}

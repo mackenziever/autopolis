@@ -1,0 +1,55 @@
+{
+  "audit_date": "2026-09-10",
+  "status": "PASS_WITH_PRODUCTION_GAPS",
+  "p0_closed": true,
+  "p1_closed": true,
+  "p1_security_hardening": true,
+  "p2_closed": true,
+  "p2_scale": true,
+  "freellm_alveare": true,
+  "goose_ops": true,
+  "tests": {
+    "core_passed": 33,
+    "failed": 0,
+    "deselected_slow": 1
+  },
+  "load_1m": {
+    "ok": true,
+    "agents": 5,
+    "ticks": 1000000,
+    "wall_seconds": 182.29,
+    "wall_hz": 5485.7,
+    "compute_p95_ms": 0.322,
+    "overruns": 16,
+    "path_cache_hits": 78213,
+    "log_bytes": 511471223
+  },
+  "delivered": [
+    "Prometheus metrics/health/ready + rate limit",
+    "OTel-lite spans",
+    "LLM gateway TLS/Auth + rate limit",
+    "PII sanitizer",
+    "HMAC replay sidecar + run manifest",
+    "ZMQ loopback + optional HMAC",
+    "CVE scan script in CI",
+    "Ops bridge + Playwright e2e",
+    "Load test harness >=1M ticks",
+    "Spatial golden + Rust/PyO3 contract",
+    "Overrun/cache/bytes perf metrics",
+    "Optional cognitive worker",
+    "Viewer 3D LOD",
+    "FreeLLMAPI Docker profile llm",
+    "Alveare RAG shared store + vault ingest",
+    "Retrieval chunk trace + FROZEN_STORE + end-tick batch",
+    "Mock LLM CI without GHCR"
+  ],
+  "known_gaps": [
+    "LLM smoke against live production endpoint",
+    "Docker registry continuous CVE scanning",
+    "Managed public TLS certs for gateway",
+    "LLM TTFT histograms",
+    "FSM property tests",
+    "Alveare JSONL retention/compaction",
+    "Compiled Rust spatial extension (contract ready; falls back to Python)"
+  ]
+}

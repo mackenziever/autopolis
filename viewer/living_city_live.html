@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CIVITAS — LIVE CITY</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#05060d; --panel:#0a0e1acc; --line:#7c3aed88; --cyan:#22d3ee; --mag:#e879f9; --txt:#e8f0ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:"Share Tech Mono",ui-monospace,monospace}
+body{display:grid;grid-template-rows:auto 1fr}
+.top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 12px;background:#080b14;border-bottom:1px solid #2a1a4a;z-index:5}
+.brand{font-family:Orbitron,sans-serif;font-weight:800;letter-spacing:.14em;color:var(--mag);font-size:14px}
+.chip{border:1px solid #3b2a66;padding:3px 8px;font-size:11px;color:#a5b4fc;border-radius:6px}
+.chip.ok{border-color:#166534;color:#86efac}
+.chip.bad{border-color:#7f1d1d;color:#fca5a5}
+a.chip{text-decoration:none}
+#view{position:relative;min-height:0;overflow:hidden}
+canvas{display:block;width:100%;height:100%}
+#titleHud{position:absolute;left:16px;top:14px;pointer-events:none;z-index:2;text-shadow:0 0 12px #e879f988}
+#titleHud h1{margin:0;font-family:Orbitron,sans-serif;font-size:20px;letter-spacing:.18em;color:var(--mag)}
+#titleHud .sub{margin-top:4px;font-size:11px;letter-spacing:.1em;color:var(--cyan);opacity:.9}
+#hud{
+  position:absolute;right:14px;top:14px;min-width:180px;max-width:260px;padding:10px 12px;z-index:2;
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;font-size:12px;line-height:1.5;backdrop-filter:blur(6px)
+}
+#hud .row{display:flex;justify-content:space-between;gap:12px}
+#feed{
+  position:absolute;left:14px;bottom:14px;width:min(420px,92%);max-height:28vh;overflow:auto;z-index:2;
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:11px
+}
+#feed .ev{padding:3px 0;border-bottom:1px solid #1e1630;color:#c4b5fd}
+#feed .ev b{color:var(--cyan)}
+#tip{position:absolute;pointer-events:none;display:none;background:#0b1320f0;border:1px solid #557;padding:6px 8px;border-radius:6px;font-size:11px;z-index:3}
+#enterBar{
+  position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:4;display:none;
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:12px;
+  backdrop-filter:blur(8px);gap:10px;align-items:center;pointer-events:auto
+}
+#enterBar.show{display:flex}
+#enterBar button{
+  font-family:Orbitron,sans-serif;letter-spacing:.08em;font-size:11px;cursor:pointer;
+  background:#1e1035;border:1px solid #a78bfa;color:#e9d5ff;padding:6px 12px;border-radius:8px
+}
+#enterBar button.primary{background:#4c1d95;border-color:#e879f9;color:#fff}
+#enterBar button:disabled{opacity:.35;cursor:not-allowed}
+#enterBar .hint{color:#a5b4fc;font-size:11px;max-width:420px}
+#navHint{
+  position:absolute;left:14px;top:70px;z-index:2;pointer-events:none;
+  font-size:10px;color:#94a3b8;line-height:1.45;max-width:280px;opacity:.85
+}
+#feed .ev.research{border-left:2px solid #22d3ee;padding-left:6px}
+#feed .ev.build{border-left:2px solid #fb923c;padding-left:6px}
+#feed .ev.web{color:#86efac}
+#followChip{display:none}
+#followChip.on{display:inline-block}
+</style>
+<script type="importmap">
+{"imports":{
+  "three":"https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/",
+  "./city_kit.js":"/viewer/city_kit.js?v=20260911p-final"
+}}
+</script>
+<meta http-equiv="Cache-Control" content="no-store" />
+</head>
+<body>
+<div class="top">
+  <span class="brand">CIVITAS LIVE</span>
+  <span class="chip" id="wsChip">ws …</span>
+  <span class="chip" id="tickChip">tick —</span>
+  <span class="chip" id="agentChip">0 citizens</span>
+  <span class="chip" id="webChip">web …</span>
+  <span class="chip" id="followChip">follow —</span>
+  <a class="chip" href="/">ops panel</a>
+  <a class="chip" href="/v1/city">/v1/city</a>
+</div>
+<div id="view">
+  <div id="titleHud"><h1>CIVITAS</h1><div class="sub">LIVING CITY · LIVE WS</div></div>
+  <div id="navHint">WASD/arrows pan · Q/R up · C down · click citizen → follow (F toggle) · H home · building ENTER/E · Esc exit</div>
+  <div id="hud">Connecting…</div>
+  <div id="feed"></div>
+  <div id="tip"></div>
+  <div id="enterBar" class="show">
+    <span class="hint" id="enterHint">WASD navigate · click building · ENTER / E inside · click citizen + F follow · Esc exit</span>
+    <button type="button" class="primary" id="btnEnter" disabled>ENTER</button>
+    <button type="button" id="btnExit" style="display:none">EXIT</button>
+  </div>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import {
+  populateCity, createCitizen, tintCitizen, animateCitizen, loadCitizenGlb, hashStr, createBuilding,
+  createConstructionSite, updateConstructionSiteStatus, applyRoomLayout,
+  setBuildingEntered, setBuildingSelected, resetBuildingVisual, inferCitizenGender, groundCitizen,
+  citizenPoolSize, clearCitizenPools, setBuildingOccupancy
+} from './city_kit.js';
+
+// States where an agent is stationary inside a building (vs COMMUTING/
+// EXPLORING/IDLE/SOCIALIZING, which are usually outdoors or in transit) —
+// each one lights up a window on that citizen's target building.
+const INDOOR_STATES = new Set(['WORKING', 'ATTENDING_CLASS', 'EATING', 'REST']);
+let lastOccupiedPois = new Set();
+
+function updateBuildingOccupancy(snapshots){
+  const occupancy = new Map();
+  for (const s of snapshots) {
+    if (INDOOR_STATES.has(s.state) && s.target) {
+      occupancy.set(s.target, (occupancy.get(s.target) || 0) + 1);
+    }
+  }
+  const touched = new Set(occupancy.keys());
+  for (const poi of touched) {
+    const b = findBuildingByPoi(poi);
+    if (b) setBuildingOccupancy(b, occupancy.get(poi));
+  }
+  for (const poi of lastOccupiedPois) {
+    if (!touched.has(poi)) {
+      const b = findBuildingByPoi(poi);
+      if (b) setBuildingOccupancy(b, 0);
+    }
+  }
+  lastOccupiedPois = touched;
+}
+
+const colors = {
+  IDLE:0x94a3b8, COMMUTING:0x22d3ee, WORKING:0xfbbf24, ATTENDING_CLASS:0xa78bfa,
+  EXPLORING:0x34d399, SOCIALIZING:0xe879f9, EATING:0xf472b6, REST:0x64748b
+};
+const POI_META = {
+  Home:{label:'Main Tower',color:0xe879f9,h:5.5},
+  Office:{label:'Cobalt Block',color:0x38bdf8,h:4.2},
+  Aula_101:{label:'The Institute',color:0x22d3ee,h:3.8},
+  Aula_202:{label:'Intelligence Hub',color:0x818cf8,h:3.6},
+  Cafe:{label:'Central Cafe',color:0xfb7185,h:2.4},
+  AgentCafe:{label:'Agent Cafe',color:0xf43f5e,h:2.8},
+  Gym:{label:'Fitness Hub',color:0xd946ef,h:2.8},
+  Plaza:{label:'Terrace Park',color:0x4ade80,h:1.6},
+  Market:{label:'Supply Shop',color:0x67e8f9,h:2.2},
+  Library:{label:'Civic Library',color:0xfde68a,h:3.4},
+  Workshop:{label:'Workshop',color:0xfb923c,h:3.0},
+  Lab:{label:'R&D Lab',color:0x2dd4bf,h:3.2},
+  Clinic:{label:'Clinic',color:0xf9a8d4,h:2.6},
+  Arena:{label:'Arena',color:0xc084fc,h:3.8},
+  TowerLounge:{label:'Tower Lounge',color:0xa78bfa,h:4.0},
+  MarketStall:{label:'Market Stall',color:0xfbbf24,h:1.8},
+  MakerSpace:{label:'Maker Space',color:0x34d399,h:2.9},
+  GreenHouse:{label:'GreenHouse',color:0x4ade80,h:2.2},
+};
+
+const view = document.getElementById('view');
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+view.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x02030a);
+scene.fog = new THREE.FogExp2(0x12081f, 0.008);
+const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 500);
+camera.position.set(42, 46, 58);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(32, 1.5, 32);
+controls.enableDamping = true;
+controls.minDistance = 2;
+controls.maxDistance = 280;
+controls.maxPolarAngle = Math.PI * 0.49;
+controls.screenSpacePanning = true;
+const keys = Object.create(null);
+let followId = null;
+let selectedCitizenId = null;
+const camVel = new THREE.Vector3();
+const _fwd = new THREE.Vector3();
+const _right = new THREE.Vector3();
+const _up = new THREE.Vector3(0, 1, 0);
+scene.add(new THREE.HemisphereLight(0xb794f6, 0x0b1020, 0.7));
+const sun = new THREE.DirectionalLight(0xffe4ff, 0.95);
+sun.position.set(30, 70, 20);
+scene.add(sun);
+
+const grid = new THREE.GridHelper(128, 64, 0x22d3ee, 0x4c1d95);
+grid.position.set(32, 0.02, 32);
+scene.add(grid);
+const gridGlow = new THREE.GridHelper(128, 16, 0xe879f9, 0x000000);
+gridGlow.position.set(32, 0.03, 32);
+if (Array.isArray(gridGlow.material)) {
+  gridGlow.material.forEach(m => { m.transparent = true; m.opacity = 0.22; });
+} else {
+  gridGlow.material.transparent = true;
+  gridGlow.material.opacity = 0.22;
+}
+scene.add(gridGlow);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+// Soft bloom — neon orbs / windows (strength low so citizens never blob)
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(1,1), 0.22, 0.55, 0.78);
+bloomPass.enabled = true;
+composer.addPass(bloomPass);
+
+const cityGroup = new THREE.Group();
+const agentsGroup = new THREE.Group();
+scene.add(cityGroup);
+scene.add(agentsGroup);
+
+const agentMeshes = new Map();
+const constructionSites = new Map(); // project_id | poi -> { mesh, label, data }
+const poiLabelDone = new Set();
+let agents = {};
+let tick = 0;
+let feed = [];
+let cityBuilt = false;
+let movingFlags = new Map();
+
+function resize(){
+  const w = view.clientWidth, h = view.clientHeight;
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  renderer.setSize(w, h, false);
+  composer.setSize(w, h);
+}
+addEventListener('resize', resize); resize();
+
+function makeLabel(text, tint='#e8f0ff'){
+  const c=document.createElement('canvas'); c.width=512; c.height=96;
+  const g=c.getContext('2d');
+  g.clearRect(0,0,512,96);
+  g.beginPath();
+  if(g.roundRect) g.roundRect(6,10,500,76,10);
+  else g.rect(6,10,500,76);
+  g.fillStyle='rgba(5,8,20,0.82)'; g.fill();
+  g.lineWidth=2.5; g.strokeStyle=tint; g.stroke();
+  g.fillStyle=tint; g.font='bold 32px Orbitron, sans-serif'; g.fillText(text,26,58);
+  const tex=new THREE.CanvasTexture(c); tex.needsUpdate=true;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
+  sp.scale.set(8.5,1.7,1); return sp;
+}
+
+function buildCity(pois, blocked=[], opts={}){
+  while(cityGroup.children.length) cityGroup.remove(cityGroup.children[0]);
+  poiLabelDone.clear();
+  const cityPois = {};
+  const wildPois = {};
+  for(const [name, xy] of Object.entries(pois||{})){
+    if(String(name).startsWith('Wild_')) wildPois[name] = xy;
+    else cityPois[name] = xy;
+  }
+  const poiMeta = {};
+  for(const [name] of Object.entries(cityPois)){
+    poiMeta[name] = POI_META[name] || {label:name, color:0xe879f9, h:2.8};
+  }
+  const margin = Number(opts.wilderness_margin) || 24;
+  populateCity(THREE, {
+    group: cityGroup,
+    gridW: Number(opts.grid_w) || 64,
+    gridH: Number(opts.grid_h) || 64,
+    blocked: blocked || [],
+    pois: cityPois,
+    seed: 42,
+    poiMeta,
+    theme: 'cyberpunk',
+    roads: false,
+    wildernessMargin: margin,
+  });
+  for(const [name, xy] of Object.entries(cityPois)){
+    addPoiLabel(name, xy[0], xy[1]);
+  }
+  for(const [name, xy] of Object.entries(wildPois)){
+    const lab = makeLabel(String(name).replace(/^Wild_/, '◇ '), '#34d399');
+    lab.position.set(xy[0], 2.2, xy[1]);
+    lab.scale.set(6.5, 1.3, 1);
+    cityGroup.add(lab);
+    poiLabelDone.add(name);
+  }
+  cityBuilt = true;
+}
+
+function addPoiLabel(name, x, y){
+  if(poiLabelDone.has(name)) return;
+  const meta = POI_META[name] || {label:name, color:0xe879f9, h:2.8};
+  const tint = '#'+(meta.color||0xe879f9).toString(16).padStart(6,'0');
+  const lab = makeLabel(meta.label||name, tint);
+  lab.position.set(x, (meta.h||3)+3.8, y);
+  cityGroup.add(lab);
+  poiLabelDone.add(name);
+}
+
+function ensurePoiLate(name, x, y){
+  // Remove any scaffold for this POI
+  for(const [key, site] of [...constructionSites.entries()]){
+    if(site.data?.poi === name || key === name){
+      cityGroup.remove(site.mesh);
+      if(site.label) cityGroup.remove(site.label);
+      constructionSites.delete(key);
+    }
+  }
+  if(poiLabelDone.has(name)){
+    // already a finished building — just ensure label
+    addPoiLabel(name, x, y);
+    return;
+  }
+  const meta = POI_META[name] || {label:name, color:0xe879f9, h:2.8};
+  const h = Math.max(meta.h || 2.8, 3.4);
+  const footprint = Math.max(3.2, Math.min(4.4, 2.8 + h * 0.32));
+  const b = createBuilding(THREE, {
+    w: footprint, h, d: footprint * 0.9,
+    seed: hashStr(name),
+    theme: 'cyberpunk',
+    facade: meta.color,
+    interactiveMeta: {name, ...meta},
+  });
+  b.position.set(x, 0, y);
+  cityGroup.add(b);
+  addPoiLabel(name, x, y);
+}
+
+function siteKey(ev){
+  return ev.project_id || ev.poi || `${ev.kind||'site'}_${ev.xy?.[0]}_${ev.xy?.[1]}`;
+}
+
+function ensureConstructionSite(ev){
+  let xy = ev.xy;
+  const key = siteKey(ev);
+  // contribute events often omit xy — reuse existing site coords
+  if((!xy || xy.length < 2) && constructionSites.has(key)){
+    xy = constructionSites.get(key).data?.xy;
+  }
+  if((!xy || xy.length < 2) && ev.poi){
+    for(const s of constructionSites.values()){
+      if(s.data?.poi === ev.poi && s.data?.xy){ xy = s.data.xy; break; }
+    }
+  }
+  if(!xy || xy.length < 2) return;
+  const poi = ev.poi || ev.kind || 'Site';
+  if(poiLabelDone.has(poi)) return; // already built
+  const status = ev.status || (ev.type === 'build_contribute' ? undefined : 'funding');
+  let site = constructionSites.get(key);
+  if(!site){
+    // reuse by poi if same location project restarted under new id
+    for(const [k, s] of constructionSites){
+      if(s.data?.poi === poi){ site = s; constructionSites.delete(k); break; }
+    }
+  }
+  const meta = POI_META[poi] || {label: poi, color: 0xfbbf24, h: 2.2};
+  if(!site){
+    const mesh = createConstructionSite(THREE, {
+      w: 2.2, h: status === 'building' ? 2.2 : 1.4, d: 2.2,
+      status: status || 'funding',
+      projectId: key,
+      meta: { name: poi, ...meta },
+      theme: 'cyberpunk',
+    });
+    mesh.position.set(xy[0], 0, xy[1]);
+    cityGroup.add(mesh);
+    const tint = status === 'building' ? '#fb923c' : '#fbbf24';
+    const lab = makeLabel(`${meta.label || poi} · ${(status||'funding').toUpperCase()}`, tint);
+    lab.position.set(xy[0], 3.2, xy[1]);
+    lab.scale.set(7.2, 1.45, 1);
+    cityGroup.add(lab);
+    site = { mesh, label: lab, data: {} };
+  }
+  const escrow = Number(ev.escrow ?? site.data.escrow ?? 0);
+  const cost = Number(ev.cost ?? site.data.cost ?? 0);
+  const st = status || site.data.status || 'funding';
+  updateConstructionSiteStatus(site.mesh, st);
+  site.data = {
+    ...site.data,
+    project_id: key,
+    poi,
+    xy: [xy[0], xy[1]],
+    status: st,
+    escrow,
+    cost,
+    remaining: ev.remaining != null ? Number(ev.remaining) : Math.max(0, cost - escrow),
+  };
+  if(site.label){
+    const pct = cost > 0 ? Math.round(100 * Math.min(1, escrow / cost)) : 0;
+    const tint = st === 'building' ? '#fb923c' : '#fbbf24';
+    const txt = st === 'building'
+      ? `${meta.label || poi} · BUILDING`
+      : `${meta.label || poi} · ${pct}% funded`;
+    cityGroup.remove(site.label);
+    const lab = makeLabel(txt, tint);
+    lab.position.set(xy[0], 3.2, xy[1]);
+    lab.scale.set(7.2, 1.45, 1);
+    cityGroup.add(lab);
+    site.label = lab;
+  }
+  constructionSites.set(key, site);
+  if(ev.type === 'build_propose' || st === 'building') flashBuildAt(xy[0], xy[1]);
+}
+
+function relocatePoi(poi, toXy){
+  if(!poi || !toXy) return;
+  for(const ch of cityGroup.children){
+    if(ch.userData?.kind === 'building' && ch.userData?.poi?.name === poi){
+      ch.position.set(toXy[0], 0, toXy[1]);
+    }
+  }
+  // move label sprites near old poi — rebuild label at new pos
+  addPoiLabel(poi, toXy[0], toXy[1]);
+}
+
+function syncConstructionFromCity(city){
+  const projects = city?.construction?.projects || [];
+  for(const p of projects){
+    if(!p || !p.xy) continue;
+    if(p.status === 'complete'){
+      ensurePoiLate(p.poi, p.xy[0], p.xy[1]);
+      continue;
+    }
+    if(p.status === 'funding' || p.status === 'building'){
+      ensureConstructionSite({
+        project_id: p.project_id,
+        poi: p.poi,
+        xy: p.xy,
+        status: p.status,
+        escrow: p.escrow,
+        cost: p.cost,
+        remaining: p.remaining,
+        kind: p.kind,
+      });
+    }
+  }
+}
+
+function findBuildingByPoi(poiName){
+  if(!poiName || !cityGroup) return null;
+  let found = null;
+  cityGroup.traverse((o) => {
+    if(found) return;
+    if(o.userData?.kind === 'building' && o.userData?.poi?.name === poiName) found = o;
+  });
+  return found;
+}
+
+function applyRoomFromState(poi, room){
+  if(!poi || !room) return;
+  const b = findBuildingByPoi(poi);
+  if(!b) return;
+  applyRoomLayout(THREE, b, room);
+}
+
+function syncRoomsFromCity(city){
+  const rooms = city?.rooms?.rooms || {};
+  for(const [poi, room] of Object.entries(rooms)){
+    applyRoomFromState(poi, room);
+  }
+}
+
+function ensureAgent(id, meta = {}){
+  if(agentMeshes.has(id)) return agentMeshes.get(id);
+  const gender = inferCitizenGender(meta.name || '', id);
+  const mesh = createCitizen(THREE, colors.COMMUTING, {
+    gender,
+    variant: hashStr(id),
+    // Re-disabled 2026-09-11: normalizeCitizenRoot() scales by max(x,y,z), but
+    // these Mixamo-rigged GLBs load in bind T-pose (arms out) with no
+    // animation applied (animateCitizen() skips fromGlb meshes entirely) —
+    // width-at-arms exceeds height, so the height-targeted scale left every
+    // citizen 35-65cm tall instead of ~100-105cm, frozen in a T-pose while
+    // walking. Materials are clean (no emissive bug) but this needs either a
+    // Y-axis-only normalize pass or a real AnimationMixer before shipping.
+    allowGlb: false,
+  });
+  mesh.userData.cyberGlow = false;
+  mesh.userData.agentId = id;
+  mesh.userData.gender = gender;
+  // Small citizens; ground after scale so feet sit on y=0
+  mesh.scale.setScalar(0.95);
+  // Absolute cap — never become building-scale
+  if (mesh.scale.x > 1.2) mesh.scale.setScalar(1.0);
+  mesh.position.set(0, 0, 0);
+  groundCitizen(THREE, mesh);
+  const feetY = mesh.position.y;
+  const ring = new THREE.Mesh(
+    new THREE.CircleGeometry(0.16, 16),
+    new THREE.MeshBasicMaterial({color:0x22d3ee, transparent:true, opacity:0.5, side:THREE.DoubleSide})
+  );
+  ring.rotation.x = -Math.PI/2;
+  agentsGroup.add(mesh);
+  agentsGroup.add(ring);
+  const entry = { mesh, ring, baseScale: mesh.scale.x, feetY, gender, lastX:0, lastZ:0, moving:false };
+  agentMeshes.set(id, entry);
+  return entry;
+}
+
+function applySnapshot(s){
+  const id = s.agent_id;
+  if(!id) return;
+  agents[id] = s;
+  const m = ensureAgent(id, { name: s.name });
+  const x = Number(s.x), y = Number(s.y);
+  const dx = x - (m.lastX ?? x), dz = y - (m.lastZ ?? y);
+  m.moving = Math.hypot(dx, dz) > 0.02;
+  if(m.moving) m.mesh.rotation.y = Math.atan2(dx, dz);
+  m.lastX = x; m.lastZ = y;
+  const bob = m.moving ? 0.02 * Math.abs(Math.sin(performance.now() * 0.008)) : 0;
+  m.mesh.position.set(x + 0.5, (m.feetY ?? 0) + bob, y + 0.5);
+  m.ring.position.set(x + 0.5, 0.05, y + 0.5);
+  const col = colors[s.state] || 0xffffff;
+  tintCitizen(m.mesh, col);
+  m.ring.material.color.setHex(col);
+  if (m.ring.material.emissive) m.ring.material.emissive.setHex(col);
+  m.mesh.userData.agent = s;
+  movingFlags.set(id, m.moving);
+}
+
+function renderHud(){
+  const counts = {};
+  Object.values(agents).forEach(a => { counts[a.state] = (counts[a.state]||0)+1; });
+  const rows = Object.entries(counts).map(([k,v]) => `<div class="row"><span>${k}</span><b>${v}</b></div>`).join('');
+  const sites = [...constructionSites.values()].map(s => {
+    const d = s.data || {};
+    const pct = d.cost > 0 ? Math.round(100 * Math.min(1, (d.escrow||0) / d.cost)) : 0;
+    return `<div class="row"><span>${d.poi||'?'} · ${d.status||''}</span><b>${pct}%</b></div>`;
+  }).join('');
+  document.getElementById('hud').innerHTML =
+    `<div style="font-family:Orbitron,sans-serif;color:var(--cyan);letter-spacing:.08em;margin-bottom:6px">DAY LIVE</div>
+     <div>tick <b>${tick}</b></div>
+     <div>citizens <b>${Object.keys(agents).length}</b></div>
+     <div>sites <b>${constructionSites.size}</b></div>
+     <hr style="border-color:#2a1a4a"/>${rows || '<div>waiting agents…</div>'}
+     ${sites ? `<hr style="border-color:#2a1a4a"/><div style="color:#fbbf24;margin:4px 0">CONSTRUCTION</div>${sites}` : ''}`;
+  document.getElementById('tickChip').textContent = `tick ${tick}`;
+  document.getElementById('agentChip').textContent = `${Object.keys(agents).length} citizens`;
+  document.querySelector('#titleHud .sub').textContent =
+    `LIVING CITY · ${Object.keys(agents).length} CITIZENS · NO ROADS`;
+}
+
+function pushFeed(ev){
+  if(!ev) return;
+  const t = ev.type || 'event';
+  const who = ev.agent_id || (ev.agents||[]).join(',') || ev.founder_id || '';
+  let detail = (ev.thought || ev.choice || ev.poi || '').toString().slice(0, 90);
+  if(t === 'research_decision'){
+    const web = ev.from_web || (ev.web_hits|0) > 0 ? ` · web×${ev.web_hits||0}` : '';
+    const store = ev.stored ? ' · saved' : '';
+    const boost = ev.self_improve?.boost != null ? ` · +${ev.self_improve.boost}xp` : '';
+    detail = `${ev.choice||''} · ${ev.topic||''}${web}${store}${boost} — ${detail}`;
+  } else if(t === 'build_propose' || t === 'build_contribute' || t === 'city_build'){
+    detail = `${ev.poi || ev.kind || ev.choice || ''} — ${detail}`;
+  } else if(t === 'room_apply' || t === 'room_decision'){
+    detail = `${ev.poi || ''} · ${ev.action || ev.choice || ''} · ${ev.theme || ev.prop_kind || ''} — ${detail}`;
+  }
+  const cls = [
+    t.includes('research') ? 'research' : '',
+    (t.includes('build') || t === 'city_build') ? 'build' : '',
+    t.includes('room') ? 'build' : '',
+    (ev.from_web || (ev.web_hits|0) > 0) ? 'web' : '',
+  ].filter(Boolean).join(' ');
+  feed.unshift({t, who, detail, tick: ev.tick, cls});
+  feed = feed.slice(0, 50);
+  document.getElementById('feed').innerHTML = feed.map(e =>
+    `<div class="ev ${e.cls||''}"><b>t${e.tick??'?'}</b> ${e.t} ${e.who} — ${e.detail}</div>`
+  ).join('');
+}
+
+function flashBuildAt(x, z){
+  const geo = new THREE.CylinderGeometry(0.15, 0.45, 8, 8);
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xfb923c, transparent: true, opacity: 0.85, depthWrite: false
+  });
+  const beam = new THREE.Mesh(geo, mat);
+  beam.position.set(x + 0.5, 4, z + 0.5);
+  cityGroup.add(beam);
+  const start = performance.now();
+  (function fade(){
+    const u = (performance.now() - start) / 2200;
+    if(u >= 1){ cityGroup.remove(beam); geo.dispose(); mat.dispose(); return; }
+    mat.opacity = 0.85 * (1 - u);
+    beam.position.y = 4 + u * 3;
+    requestAnimationFrame(fade);
+  })();
+  // Glance camera toward new build (outdoor only)
+  if(!insideBuilding && !followId){
+    controls.target.set(x + 0.5, 1.2, z + 0.5);
+  }
+}
+
+async function bootstrap(){
+  // FAIL-CLOSED: empty pools + allowGlb:false. citizens/meshy/xbot.glb and
+  // soldier.glb are materials-clean (no emissive/lime bug) but load in a
+  // T-pose with no animation support — see the allowGlb comment in
+  // ensureAgent() below and viewer/assets/models/README.md before re-wiring.
+  clearCitizenPools();
+  await loadCitizenGlb(THREE, GLTFLoader, { male: [], female: [] });
+  try{
+    const city = await fetch('/v1/city').then(r=>r.json());
+    const pois = city.pois || {};
+    const blocked = city.blocked || [];
+    buildCity(pois, blocked, {
+      grid_w: city.grid_w || 64,
+      grid_h: city.grid_h || 64,
+      wilderness_margin: city.wilderness_margin || 24,
+    });
+    syncConstructionFromCity(city);
+    syncRoomsFromCity(city);
+    const ag = await fetch('/v1/agents').then(r=>r.json());
+    (ag.agents||[]).forEach(a=>{
+      const pos = a.position || [0,0];
+      applySnapshot({
+        agent_id: a.agent_id,
+        name: a.name,
+        x: pos[0], y: pos[1],
+        state: a.state,
+        thought: a.thought,
+        job: a.job,
+      });
+    });
+    renderHud();
+  }catch(e){
+    document.getElementById('hud').textContent = 'bootstrap failed: '+e;
+  }
+}
+
+function connectWs(){
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const ws = new WebSocket(`${proto}://${location.host}/ws/city`);
+  const chip = document.getElementById('wsChip');
+  ws.onopen = () => { chip.textContent = 'ws live'; chip.className = 'chip ok'; };
+  ws.onclose = () => {
+    chip.textContent = 'ws down — retry';
+    chip.className = 'chip bad';
+    setTimeout(connectWs, 2000);
+  };
+  ws.onerror = () => { chip.textContent = 'ws error'; chip.className = 'chip bad'; };
+  ws.onmessage = (msg) => {
+    let data;
+    try { data = JSON.parse(msg.data); } catch { return; }
+    if(data.type === 'ping'){ ws.send('pong'); return; }
+    if(data.type !== 'tick') return;
+    tick = data.tick ?? tick;
+    (data.snapshots||[]).forEach(applySnapshot);
+    updateBuildingOccupancy(data.snapshots||[]);
+    (data.cognitive||[]).forEach(ev => {
+      pushFeed(ev);
+      if(ev.type === 'city_build' && ev.poi && ev.xy){
+        ensurePoiLate(ev.poi, ev.xy[0], ev.xy[1]);
+        flashBuildAt(ev.xy[0], ev.xy[1]);
+      }
+      if(ev.type === 'build_propose' || ev.type === 'build_contribute'){
+        ensureConstructionSite(ev);
+      }
+      if(ev.type === 'relocate_completed' && ev.poi && (ev.to || ev.to_xy)){
+        const to = ev.to || ev.to_xy;
+        relocatePoi(ev.poi, to);
+        flashBuildAt(to[0], to[1]);
+      }
+      if(ev.type === 'room_apply' && ev.poi && ev.room){
+        applyRoomFromState(ev.poi, ev.room);
+        const b = findBuildingByPoi(ev.poi);
+        if(b) flashBuildAt(b.position.x, b.position.z);
+      }
+    });
+    renderHud();
+  };
+}
+
+async function refreshWebChip(){
+  try{
+    const h = await fetch('/health').then(r=>r.json());
+    const chip = document.getElementById('webChip');
+    if(!h.web_search_enabled){
+      chip.textContent = 'web off';
+      chip.className = 'chip';
+      return;
+    }
+    const s = h.web_search || {};
+    const r = h.research || {};
+    chip.textContent = `web live ${s.live||0}/replay ${s.replay||0} · research ${r.writes||0}`;
+    chip.className = 'chip ok';
+  }catch{
+    document.getElementById('webChip').textContent = 'web ?';
+  }
+}
+setInterval(refreshWebChip, 8000);
+refreshWebChip();
+
+const tip = document.getElementById('tip');
+const enterBar = document.getElementById('enterBar');
+const enterHint = document.getElementById('enterHint');
+const btnEnter = document.getElementById('btnEnter');
+const btnExit = document.getElementById('btnExit');
+const ray = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let selectedBuilding = null;
+let insideBuilding = null;
+let aerialState = null;
+let pointerDown = null;
+let lastClickBuilding = null;
+let lastClickAt = 0;
+
+function buildingLabel(b){
+  return b?.userData?.poi?.label || b?.userData?.poi?.name || 'Building';
+}
+
+function findBuildingRoot(obj){
+  let o = obj;
+  while(o){
+    if(o.userData?.kind === 'building') return o;
+    if(o.userData?.buildingRoot) return o.userData.buildingRoot;
+    o = o.parent;
+  }
+  return null;
+}
+
+function pickBuildingAt(clientX, clientY){
+  const r = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((clientX - r.left) / r.width) * 2 - 1;
+  mouse.y = -((clientY - r.top) / r.height) * 2 + 1;
+  ray.setFromCamera(mouse, camera);
+  const hits = ray.intersectObjects(cityGroup.children, true);
+  for(const h of hits){
+    const root = findBuildingRoot(h.object);
+    if(root?.userData?.enterable) return root;
+  }
+  return null;
+}
+
+function refreshEnterBar(){
+  enterBar.classList.add('show');
+  if(insideBuilding){
+    enterHint.textContent = `Inside · ${buildingLabel(insideBuilding)} · Esc / EXIT to leave`;
+    btnEnter.style.display = 'none';
+    btnEnter.disabled = true;
+    btnExit.style.display = '';
+    return;
+  }
+  btnExit.style.display = 'none';
+  btnEnter.style.display = '';
+  if(selectedBuilding){
+    enterHint.textContent = `Selected · ${buildingLabel(selectedBuilding)} · ENTER / E / double-click to go inside`;
+    btnEnter.disabled = false;
+  } else {
+    enterHint.textContent = 'Click a building to select · ENTER / E or double-click to go inside · Esc exit';
+    btnEnter.disabled = true;
+  }
+}
+
+function selectBuilding(b){
+  if(insideBuilding) return;
+  if(selectedBuilding && selectedBuilding !== b) setBuildingSelected(selectedBuilding, false);
+  selectedBuilding = b;
+  if(b) setBuildingSelected(b, true);
+  refreshEnterBar();
+  if(b){
+    tip.style.display = 'block';
+    tip.innerHTML = `<b>${buildingLabel(b)}</b><br>Selected — press ENTER to go inside`;
+  }
+}
+
+function clearSelection(){
+  if(selectedBuilding) setBuildingSelected(selectedBuilding, false);
+  selectedBuilding = null;
+  refreshEnterBar();
+}
+
+function animateCam(focus){
+  if(!focus) return;
+  camera.position.set(focus.cam.x, focus.cam.y, focus.cam.z);
+  controls.target.set(focus.target.x, focus.target.y, focus.target.z);
+  controls.update();
+}
+
+function forEachBuilding(fn){
+  for(const ch of cityGroup.children){
+    if(ch.userData?.kind === 'building') fn(ch);
+  }
+}
+
+function restoreOutdoorView(){
+  // Always restore every building to outdoor state
+  forEachBuilding((ch) => resetBuildingVisual(ch));
+
+  insideBuilding = null;
+  agentsGroup.visible = true;
+  grid.visible = true;
+  gridGlow.visible = true;
+
+  controls.enabled = true;
+  controls.enableRotate = true;
+  controls.enablePan = true;
+  controls.enableZoom = true;
+  controls.minDistance = 2;
+  controls.maxDistance = 280;
+  controls.maxPolarAngle = Math.PI * 0.49;
+
+  if(aerialState){
+    camera.position.copy(aerialState.cam);
+    controls.target.copy(aerialState.target);
+    if(scene.fog) scene.fog.density = aerialState.fog;
+    aerialState = null;
+  } else {
+    camera.position.set(42, 46, 58);
+    controls.target.set(32, 1.5, 32);
+    if(scene.fog) scene.fog.density = 0.011;
+  }
+  camera.near = 0.1;
+  camera.far = 500;
+  camera.updateProjectionMatrix();
+  controls.update();
+}
+
+function enterBuilding(b){
+  b = b || selectedBuilding;
+  if(!b?.userData?.enterable) return;
+  if(insideBuilding === b) return;
+
+  // If somehow inside another building, fully exit first
+  if(insideBuilding) restoreOutdoorView();
+
+  aerialState = {
+    cam: camera.position.clone(),
+    target: controls.target.clone(),
+    fog: scene.fog ? scene.fog.density : 0.011,
+  };
+
+  if(selectedBuilding && selectedBuilding !== b) setBuildingSelected(selectedBuilding, false);
+  selectedBuilding = b;
+  setBuildingSelected(b, true);
+
+  // Only modify THIS building — never hide the rest of the city
+  const focus = setBuildingEntered(THREE, b, true);
+  setBuildingSelected(b, false);
+  insideBuilding = b;
+
+  if(scene.fog) scene.fog.density = 0.004;
+  agentsGroup.visible = false;
+  // keep grid subtle indoors
+  grid.visible = false;
+  gridGlow.visible = false;
+
+  controls.minDistance = 0.3;
+  controls.maxDistance = 8;
+  controls.maxPolarAngle = Math.PI * 0.85;
+  camera.near = 0.05;
+  camera.updateProjectionMatrix();
+  animateCam(focus);
+  tip.style.display = 'none';
+  refreshEnterBar();
+}
+
+function exitBuilding(){
+  if(!insideBuilding && !aerialState){
+    // still force a clean outdoor reset
+    restoreOutdoorView();
+    if(selectedBuilding) setBuildingSelected(selectedBuilding, true);
+    refreshEnterBar();
+    return;
+  }
+  const was = insideBuilding;
+  restoreOutdoorView();
+  if(was){
+    selectedBuilding = was;
+    setBuildingSelected(was, true);
+  }
+  tip.style.display = 'none';
+  refreshEnterBar();
+}
+
+addEventListener('keydown', (e) => {
+  if(e.target && ['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+  keys[e.code] = true;
+  if(e.key === 'Escape'){
+    if(insideBuilding) exitBuilding();
+    else if(followId){ followId = null; updateFollowChip(); }
+    else clearSelection();
+    return;
+  }
+  if((e.key === 'e' || e.key === 'E') && selectedBuilding && !insideBuilding){
+    e.preventDefault();
+    enterBuilding(selectedBuilding);
+  }
+  if(e.key === 'f' || e.key === 'F'){
+    if(selectedCitizenId){
+      followId = followId === selectedCitizenId ? null : selectedCitizenId;
+      if(followId && insideBuilding) exitBuilding();
+      updateFollowChip();
+    }
+  }
+  if(e.key === 'h' || e.key === 'H'){
+    followId = null;
+    updateFollowChip();
+    if(!insideBuilding){
+      camera.position.set(42, 46, 58);
+      controls.target.set(32, 1.5, 32);
+    }
+  }
+});
+addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+function updateFollowChip(){
+  const chip = document.getElementById('followChip');
+  if(!followId){
+    chip.textContent = 'follow —';
+    chip.className = 'chip';
+    chip.classList.remove('on');
+    return;
+  }
+  const a = agents[followId];
+  chip.textContent = `follow ${a?.name || followId}`;
+  chip.className = 'chip ok on';
+}
+
+function selectCitizen(id){
+  selectedCitizenId = id;
+  followId = id;
+  updateFollowChip();
+  if(insideBuilding) exitBuilding();
+  clearSelection();
+}
+
+function panCamera(dt){
+  if(insideBuilding || followId) return;
+  const speed = (keys['ShiftLeft'] || keys['ShiftRight'] ? 42 : 22) * (dt / 1000);
+  let mx = 0, mz = 0, my = 0;
+  if(keys['KeyW'] || keys['ArrowUp']) mz -= 1;
+  if(keys['KeyS'] || keys['ArrowDown']) mz += 1;
+  if(keys['KeyA'] || keys['ArrowLeft']) mx -= 1;
+  if(keys['KeyD'] || keys['ArrowRight']) mx += 1;
+  if(keys['KeyQ'] || keys['PageUp'] || keys['KeyR']) my += 1;
+  if(keys['KeyC'] || keys['PageDown']) my -= 1;
+  if(!mx && !mz && !my) return;
+  camera.getWorldDirection(_fwd);
+  _fwd.y = 0;
+  if(_fwd.lengthSq() < 1e-6) _fwd.set(0, 0, -1);
+  _fwd.normalize();
+  _right.crossVectors(_fwd, _up).normalize();
+  camVel.set(0, 0, 0);
+  camVel.addScaledVector(_right, mx * speed);
+  camVel.addScaledVector(_fwd, -mz * speed);
+  camVel.y += my * speed;
+  camera.position.add(camVel);
+  controls.target.add(camVel);
+}
+
+function followCam(dt){
+  if(!followId) return;
+  const m = agentMeshes.get(followId);
+  if(!m) return;
+  const tx = m.mesh.position.x;
+  const ty = m.mesh.position.y + 1.2;
+  const tz = m.mesh.position.z;
+  const desired = new THREE.Vector3(tx - 4.5, ty + 3.2, tz + 5.5);
+  const k = Math.min(1, (dt / 1000) * 3.2);
+  camera.position.lerp(desired, k);
+  controls.target.lerp(new THREE.Vector3(tx, ty, tz), k);
+}
+
+btnEnter.onclick = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  enterBuilding(selectedBuilding);
+};
+btnExit.onclick = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  exitBuilding();
+};
+
+renderer.domElement.addEventListener('pointerdown', (e)=>{
+  if(e.button !== 0) return;
+  pointerDown = { x: e.clientX, y: e.clientY, t: performance.now() };
+});
+
+renderer.domElement.addEventListener('pointerup', (e)=>{
+  if(e.button !== 0 || !pointerDown) return;
+  const dx = e.clientX - pointerDown.x;
+  const dy = e.clientY - pointerDown.y;
+  const dt = performance.now() - pointerDown.t;
+  pointerDown = null;
+  if(Math.hypot(dx, dy) > 8 || dt > 800) return;
+
+  // Inside: click does nothing (use EXIT / Esc)
+  if(insideBuilding) return;
+
+  // Prefer citizen pick for follow/nav
+  const roots = [...agentMeshes.values()].map(m=>m.mesh);
+  ray.setFromCamera(mouse, camera);
+  {
+    const r = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+    mouse.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+  }
+  ray.setFromCamera(mouse, camera);
+  const agentHits = ray.intersectObjects(roots, true);
+  if(agentHits.length){
+    let obj = agentHits[0].object;
+    while(obj && !obj.userData.agent && obj.parent) obj = obj.parent;
+    const found = obj?.userData?.agent;
+    if(found?.agent_id){
+      selectCitizen(found.agent_id);
+      tip.style.display = 'block';
+      tip.innerHTML = `<b>${found.name||found.agent_id}</b><br>Following — F toggle · H home<br>${(found.thought||'').slice(0,80)}`;
+      return;
+    }
+  }
+
+  const b = pickBuildingAt(e.clientX, e.clientY);
+  const now = performance.now();
+  const isDouble = b && lastClickBuilding === b && (now - lastClickAt) < 350;
+  lastClickBuilding = b;
+  lastClickAt = now;
+
+  if(!b){
+    clearSelection();
+    tip.style.display = 'none';
+    return;
+  }
+
+  const r = renderer.domElement.getBoundingClientRect();
+  tip.style.display = 'block';
+  tip.style.left = (e.clientX - r.left + 12) + 'px';
+  tip.style.top = (e.clientY - r.top + 12) + 'px';
+
+  // Double-click = enter; single click = select only
+  if(isDouble){
+    selectBuilding(b);
+    enterBuilding(b);
+    return;
+  }
+  selectBuilding(b);
+});
+
+renderer.domElement.addEventListener('mousemove', (e)=>{
+  if(insideBuilding){ tip.style.display='none'; renderer.domElement.style.cursor='default'; return; }
+  const r = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((e.clientX-r.left)/r.width)*2-1;
+  mouse.y = -((e.clientY-r.top)/r.height)*2+1;
+  ray.setFromCamera(mouse, camera);
+  const roots = [...agentMeshes.values()].map(m=>m.mesh);
+  const agentHits = ray.intersectObjects(roots, true);
+  if(agentHits.length){
+    let obj = agentHits[0].object;
+    while(obj && !obj.userData.agent && obj.parent) obj = obj.parent;
+    const found = obj?.userData?.agent;
+    if(found){
+      tip.style.display='block';
+      tip.style.left = (e.clientX - r.left + 12)+'px';
+      tip.style.top = (e.clientY - r.top + 12)+'px';
+      tip.innerHTML = `<b>${found.name||found.agent_id}</b><br>${found.state} · ${found.job||''} · ${obj?.userData?.gender||''}<br>${(found.thought||'').slice(0,80)}`;
+      renderer.domElement.style.cursor = 'pointer';
+      return;
+    }
+  }
+  const b = pickBuildingAt(e.clientX, e.clientY);
+  if(b){
+    tip.style.display='block';
+    tip.style.left = (e.clientX - r.left + 12)+'px';
+    tip.style.top = (e.clientY - r.top + 12)+'px';
+    const sel = selectedBuilding === b ? ' · SELECTED — press ENTER / E' : '';
+    tip.innerHTML = `<b>${buildingLabel(b)}</b><br>Click to select${sel}`;
+    renderer.domElement.style.cursor = 'pointer';
+  } else {
+    if(!selectedBuilding) tip.style.display='none';
+    renderer.domElement.style.cursor = 'default';
+  }
+});
+
+refreshEnterBar();
+
+let lastFrame = performance.now();
+function loop(){
+  const now = performance.now();
+  const dt = Math.min(50, now - lastFrame);
+  lastFrame = now;
+  panCamera(dt);
+  followCam(dt);
+  controls.update();
+  // Pulse construction rings
+  const t = now * 0.004;
+  for(const site of constructionSites.values()){
+    const ring = site.mesh?.userData?.pulse;
+    if(ring?.material){
+      ring.material.opacity = 0.45 + 0.35 * (0.5 + 0.5 * Math.sin(t));
+      ring.rotation.z = t * 0.15;
+    }
+  }
+  for(const [id, m] of agentMeshes){
+    animateCitizen(m.mesh, 16, !!movingFlags.get(id));
+  }
+  composer.render();
+  requestAnimationFrame(loop);
+}
+
+bootstrap().then(connectWs);
+loop();
+</script>
+</body>
+</html>

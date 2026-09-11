@@ -1,0 +1,557 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-09-07T21:28:04.234729+00:00",
+    "component": {
+      "type": "application",
+      "name": "civitas-core",
+      "version": "0.1.0"
+    },
+    "tools": [
+      {
+        "name": "generate_sbom.py",
+        "version": "0.1.0"
+      }
+    ],
+    "properties": [
+      {
+        "name": "python",
+        "value": "3.14.6"
+      },
+      {
+        "name": "platform",
+        "value": "Windows-11-10.0.26200-SP0"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "file",
+      "name": "agents/__init__.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "agents/cognitive.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "bd6046dd9dde2c379a40dfc8e91a3be145eef365e2fed34960b6f054feb05546"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "agents/memory.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "173e22ee75e202388e8c6cea6f67e68189007b64c774ef2fad36422c9d286251"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "agents/models.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f4869f47eca37ac986d768252608cfbe75f03abf3c70f89ef50f680ade4fdf9b"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "agents/persona.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4726ef810ad6a07820646db3c1cbdbe7fbd265f790cc3c33f7a4f0a9ac4d6061"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "agents/state_machine.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f578c1ad0fa0fea22fd9983561f78a7a5326af00a78de1dece83d570ef3085b2"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "benchmark.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cfc480dcd8e5586745c0f5f14724f752beace5ba9085ec04e34ef87ad1ea5034"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "check_determinism.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3e4f4e7f5c697a9b0afeb6089e297e38b40db3ea77b31fd214bc3823eeca48d5"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "config.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4fbb88d7c1e6f4579db59b74390af0f5820b4d18a45381c6bf79f62c3e8fd49b"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "engine/__init__.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "engine/checkpoint.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "710286ebb2566f9db512e5c2b231d52a5e7b400fd4cfe58595227c482f813640"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "engine/spatial.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "653cc98fcf75d8a122f9e74d5d02a2c919b6d953422cd3e293d259f2453eac1e"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "engine/spatial_hash.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c03bfea145dc9044e8a794c8e39ec5b8cc72cc7b708aa23de0c7cb2f3d33f340"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "engine/tick_engine.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cac2a002f72ccfcf57cc1be4aecd189220afad8a67ed89f90739739ca7548a05"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "export_parquet.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ef2929a41f870de1320da71122afada0d35f3ee6426c0a4a03ddebd953f7cc5c"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "inspect_replay.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7d2990f4a4a1098523d1a2a9ea1fb0d59fc168b61449f650275eaedec6e42aed"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "llm/__init__.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "llm/budget.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c7652ce450d4344702d6e048ec5c86f625349338142545b1fe228e7daf9ff148"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "llm/openai_http.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "11bbbf5ced46668d5c417023cfdbab6893b272a59b21fc98096619f72c7e692c"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "llm/router.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "af9af48f165b9787fcb424530d90eb921d9deb1b45de2e26c24a6e2353316c3a"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "llm/schemas.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7ce0d3a9ae868c610560f9989f68a88d5839a89d67a3b080f5ac777fd4ffc2a4"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "llm_smoke_test.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5cecfbd8d5cd3d51748d5e4aa1e66b7659f88ba5fad605e1bf6db7395b61677c"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "main.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b4451b3936636871742a890251040c9e7a03c166fb486fd0f9b40c7e4da04e56"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "metrics/__init__.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b424f4031e2a334a174320ac14588840f5b72cc3e88ae57412922310697974e8"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "metrics/collector.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "49ed0360bd081e0b660c2707d318026e521729fa48761144a9b93028b50f4950"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "metrics/server.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "193131c5db71947abd61890a5218205d3d800a3f721beda4ec7cae3072f7401a"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "run_audit.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "454a0f69e23574e18e9422ed1ebd2d7c21759afad773283c94a3f2f27179f726"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "scripts/generate_lockfile.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2f857c0017d9ea0b849f83c128fe5336da05748ac69d80cd5e5a1df6c087e86f"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "scripts/generate_sbom.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c9c0658dd0ea8cfba08a1da8fb299280949053820b0623cda3bf56fe7f506a24"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "security/__init__.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6bb79ebef0a30c170eeababc113bf16b779b9f54a74b841a429b92f0f6d2e1b9"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "security/hardening.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3ebe8247513a19d9c3d43ffe9bdc531fe3051f692f12b6946d8151a576ac9214"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "telemetry/__init__.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "telemetry/analytics.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f8fbd8858b9e512bbb67061d2b27e5df2736a8c539c083d6b938b17778278b4d"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "telemetry/bus.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e5330168a3a3f4e9b8a8956bfe41c25522f229ca25a503461fd6168a95ea845a"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "telemetry/delta_logger.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3c115320058878a288683f1a9726235f2fe88f585143173f8faa88ec257dac5c"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "telemetry/logger.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "60ee5d1e05f018c08b1c94655f635d77d3e72a8fc87dc59582ecea0e5750fb4e"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "tests/test_checkpoint.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "099307d32496d030e47e9cc95e222f6b51a2aa02f87d887d613cfd9e07850e2b"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "tests/test_core.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "65ce0d139c1865dc6f899701772c87db0a1c96417ef5a1a49321c71b5cd6854d"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "tests/test_llm_router.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "650908cf3acce4f716ceeb702e683581ad346360bbfca5d0f7157e8b37d3f940"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "tests/test_openai_http_mock.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f5d30096f290af0995fcfffd6da45a2234620ac04d4fb41f273d28a276c4fe95"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "tests/test_p1_p2.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2370c9f842967fbe3fc727f52abbf83cb7f75de5772f29c76bc62babc22e838b"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "tests/test_telemetry_faults.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "721a986bfb3558d7f996a50d85c3e5ba3c77d3f1bd6987dee022b25823a9f9c9"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "world/__init__.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "world/economy.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cecfff1606563c1952857dd6d991d4e6aeff43e0b92092a787b2306c875a7a3b"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "world/map.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0038342606b03d6a40857a272153ec3a4f30a8d51a9317cf7853d00a82e6d2d4"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "name": "world/social.py",
+      "version": "0.1.0",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5ef190a310cd32c6fac1e5e9eb3da45e606babf55b8cac302613041bcf69272c"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "numpy>=2.0,<3",
+      "version": "range"
+    },
+    {
+      "type": "library",
+      "name": "msgpack>=1.0,<2",
+      "version": "range"
+    },
+    {
+      "type": "library",
+      "name": "pytest>=8,<10",
+      "version": "range"
+    },
+    {
+      "type": "library",
+      "name": "pytest-asyncio>=0.24,<1",
+      "version": "range"
+    }
+  ]
+}

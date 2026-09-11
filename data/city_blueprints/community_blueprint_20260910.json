@@ -1,0 +1,20 @@
+{
+  "source": "community_proposal_log",
+  "created_utc": "20260910-140332",
+  "blueprints": [
+    {
+      "id": "community_greenhouse",
+      "poi": "GreenHouse",
+      "xy": [
+        14,
+        14
+      ],
+      "kind": "care",
+      "requires": {
+        "lessons": 5,
+        "social_events": 2
+      },
+      "description": "Serra comunitaria proposta da un consulente esterno"
+    }
+  ]
+}

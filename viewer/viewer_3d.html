@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CIVITAS — CITY 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#05060d; --panel:#0a0e1acc; --line:#7c3aed88; --cyan:#22d3ee; --mag:#e879f9; --txt:#e8f0ff;
+  --acting:#22d3ee; --learning:#a78bfa; --thinking:#f472b6; --idle:#94a3b8; --offline:#475569;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:"Share Tech Mono",ui-monospace,monospace}
+body{display:grid;grid-template-rows:auto 1fr}
+.top{display:flex;gap:10px;align-items:center;padding:8px 12px;background:#080b14;border-bottom:1px solid #2a1a4a;z-index:5}
+.brand{font-family:Orbitron,sans-serif;font-weight:800;letter-spacing:.14em;color:var(--mag);font-size:14px}
+button,select,input::file-selector-button{
+  background:#12162a;color:var(--txt);border:1px solid #3b2a66;border-radius:6px;padding:6px 10px;font:inherit
+}
+#view{position:relative;min-height:0;overflow:hidden}
+canvas{display:block;width:100%;height:100%}
+#titleHud{
+  position:absolute;left:16px;top:14px;pointer-events:none;z-index:2;
+  text-shadow:0 0 12px #e879f988;
+}
+#titleHud h1{margin:0;font-family:Orbitron,sans-serif;font-size:22px;letter-spacing:.18em;color:var(--mag)}
+#titleHud .sub{margin-top:4px;font-size:11px;letter-spacing:.12em;color:var(--cyan);opacity:.9}
+#hud{
+  position:absolute;right:14px;top:14px;min-width:150px;padding:10px 12px;z-index:2;
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  font-size:12px;line-height:1.55;backdrop-filter:blur(6px)
+}
+#hud .day{color:var(--cyan);font-family:Orbitron,sans-serif;font-size:11px;letter-spacing:.08em;margin-bottom:6px}
+#hud .row{display:flex;justify-content:space-between;gap:16px}
+#hud .k-acting{color:var(--acting)} #hud .k-learning{color:var(--learning)}
+#hud .k-thinking{color:var(--thinking)} #hud .k-idle{color:var(--idle)} #hud .k-offline{color:var(--offline)}
+#ticker{
+  position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:2;
+  max-width:min(780px,92%);padding:10px 28px;
+  background:rgba(5,8,20,0.92);border:1px solid rgba(124,58,237,0.45);border-radius:10px;
+  font-family:Orbitron,sans-serif;font-size:12.5px;letter-spacing:.08em;color:#e8f0ff;
+  text-shadow:0 0 10px rgba(232,121,249,0.35);text-align:center;
+  backdrop-filter:blur(4px);display:none
+}
+#caption{
+  position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);z-index:2;
+  background:rgba(5,8,20,0.94);border:1px solid rgba(124,58,237,0.55);padding:12px 20px;border-radius:10px;
+  text-align:center;display:none;pointer-events:none;
+  box-shadow:0 0 24px rgba(232,121,249,0.2)
+}
+#caption b{display:block;font-family:Orbitron,sans-serif;letter-spacing:.12em;margin-bottom:6px;color:var(--mag);font-size:14px}
+#tip{position:absolute;pointer-events:none;display:none;background:#0b1320f0;border:1px solid #557;padding:6px 8px;border-radius:6px;font-size:11px;z-index:3}
+#tracked{position:absolute;left:14px;bottom:18px;display:flex;gap:10px;z-index:2}
+#tracked .av{
+  width:40px;height:40px;border-radius:50%;border:2px solid #c084fc;
+  background:radial-gradient(circle at 30% 30%,#fff5,#a855f7 45%,#581c87);
+  box-shadow:0 0 14px #a855f788, inset 0 0 8px #ffffff22;
+  animation:avatar-pulse 2.4s ease-in-out infinite;position:relative
+}
+#tracked .av::after{
+  content:"";position:absolute;right:1px;bottom:1px;width:9px;height:9px;border-radius:50%;
+  background:#4ade80;box-shadow:0 0 6px #4ade80;border:1px solid #052e16
+}
+@keyframes avatar-pulse{
+  0%,100%{box-shadow:0 0 14px #a855f788;transform:scale(1)}
+  50%{box-shadow:0 0 26px #c084fccc;transform:scale(1.06)}
+}
+@media (prefers-reduced-motion:reduce){
+  #tracked .av{animation:none}
+}
+#assetHint{
+  position:absolute;left:14px;top:72px;z-index:2;font-size:10px;opacity:.65;max-width:280px;
+  color:#c4b5fd;text-shadow:0 0 8px #7c3aed88;pointer-events:none
+}
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+    "./city_kit.js": "./city_kit.js"
+  }
+}
+</script>
+</head>
+<body>
+<div class="top">
+  <span class="brand">CIVITAS 3D</span>
+  <input id="file" type="file" accept=".msgpack,.bin"/>
+  <button id="demo" type="button">Load demo</button>
+  <button id="play">▶ Play</button>
+  <label>Vel. <select id="speed"><option>.5</option><option selected>1</option><option>2</option><option>4</option><option>8</option></select>×</label>
+  <label>LOD <select id="lod"><option value="auto" selected>auto</option><option value="high">high</option><option value="low">low</option></select></label>
+  <input id="scrub" type="range" min="0" max="0" value="0" style="flex:1"/>
+  <b id="tick">tick 0</b>
+</div>
+<div id="view">
+  <div id="titleHud"><h1>CIVITAS</h1><div class="sub">CITY SIM · — CITIZENS</div></div>
+  <div id="assetHint">Città procedurale (edifici · strade · alberi · cittadini). Drop GLB in viewer/assets/models/ per upgrade.</div>
+  <div id="hud">Carica un replay MessagePack.</div>
+  <div id="caption"></div>
+  <div id="ticker"></div>
+  <div id="tracked"></div>
+  <div id="tip"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/msgpack-lite/0.1.26/msgpack.min.js"></script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import {
+  populateCity, createCitizen, tintCitizen, animateCitizen, loadCitizenGlb, hashStr
+} from './city_kit.js';
+
+const STATE_BUCKET = {
+  IDLE: 'idle', REST: 'idle',
+  COMMUTING: 'acting', WORKING: 'acting', SOCIALIZING: 'acting', EATING: 'acting',
+  ATTENDING_CLASS: 'learning',
+};
+const colors = {
+  IDLE:0x94a3b8, COMMUTING:0x22d3ee, WORKING:0xfbbf24, ATTENDING_CLASS:0xa78bfa,
+  SOCIALIZING:0xe879f9, EATING:0xf472b6, REST:0x64748b
+};
+const POI_META = {
+  Home:       {label:'Main Tower',     color:0xe879f9, h:5.5, caption:'Home base — agents return to rest.'},
+  Office:     {label:'Cobalt Block',   color:0x38bdf8, h:4.2, caption:'they work here for wages.'},
+  Aula_101:   {label:'The Institute',  color:0x22d3ee, h:3.8, caption:'they study here to upgrade their own skills.'},
+  Aula_202:   {label:'Intelligence Hub', color:0x818cf8, h:3.6, caption:'advanced classes unlock rare skills.'},
+  Cafe:       {label:'Central Cafe',   color:0xfb7185, h:2.4, caption:'eat, talk, recover social energy.'},
+  Gym:        {label:'Fitness Hub',    color:0xd946ef, h:2.8, caption:'energy recovery through training.'},
+  Plaza:      {label:'Terrace Park',   color:0x4ade80, h:1.6, caption:'public square for socializing.'},
+  Market:     {label:'Supply Shop',    color:0x67e8f9, h:2.2, caption:'supplies and informal hiring.'},
+};
+
+const $=id=>document.getElementById(id);
+const view=$('view');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.05;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+view.appendChild(renderer.domElement);
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x05060d);
+scene.fog=new THREE.FogExp2(0x05060d,0.011);
+
+const camera=new THREE.PerspectiveCamera(48,1,0.1,500);
+camera.position.set(42,46,58);
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.target.set(32,1.5,32);
+controls.enableDamping=true;
+
+const hemi=new THREE.HemisphereLight(0xb794f6,0x0b1020,0.55); scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffe4ff,0.85);
+sun.position.set(30,70,20);
+sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+scene.add(sun);
+
+/* Neon purple grid (no asphalt roads) */
+const grid=new THREE.GridHelper(128,64,0xd8b4fe,0x4c1d95);
+grid.position.y=0.02; scene.add(grid);
+const gridGlow=new THREE.GridHelper(128,16,0xe879f9,0x000000);
+gridGlow.position.y=0.03;
+if(Array.isArray(gridGlow.material)){
+  gridGlow.material.forEach(m=>{m.transparent=true; m.opacity=0.18;});
+}else{
+  gridGlow.material.transparent=true; gridGlow.material.opacity=0.18;
+}
+scene.add(gridGlow);
+
+const composer=new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+const bloom=new UnrealBloomPass(new THREE.Vector2(1,1),0.0,0.55,1.0);
+bloom.enabled=false;
+composer.addPass(bloom);
+
+let header=null, ticks=[], idx=0, playing=false, last=0, acc=0;
+const agents=new Map();
+const cityGroup=new THREE.Group(); scene.add(cityGroup);
+const poiMeshes=[];
+const raycaster=new THREE.Raycaster();
+const mouse=new THREE.Vector2();
+const tip=$('tip');
+const _prevPos=new THREE.Vector3();
+
+function resize(){
+  const w=view.clientWidth,h=view.clientHeight;
+  renderer.setSize(w,h,false);
+  composer.setSize(w,h);
+  bloom.setSize(w,h);
+  camera.aspect=w/h; camera.updateProjectionMatrix();
+}
+addEventListener('resize',resize); resize();
+
+function parse(buf){
+  const u=new Uint8Array(buf), dv=new DataView(buf); let o=0, recs=[];
+  while(o+4<=u.length){const n=dv.getUint32(o); o+=4; if(o+n>u.length)break; recs.push(msgpack.decode(u.slice(o,o+n))); o+=n;}
+  header=recs.find(x=>x.record==='header'); ticks=recs.filter(x=>x.record==='tick');
+  $('scrub').max=Math.max(0,ticks.length-1); idx=0; buildWorld(); rebuild(0);
+}
+
+$('file').onchange=async e=>parse(await e.target.files[0].arrayBuffer());
+$('demo').onclick=async ()=>{
+  try{
+    const r=await fetch('demo.msgpack');
+    if(!r.ok) throw new Error('missing replay');
+    parse(await r.arrayBuffer());
+  }catch(err){
+    $('hud').textContent='Demo non trovata. Genera con: python main.py --fast --agents 50 --ticks 600';
+    // Preview città anche senza replay
+    header={metadata:{agents:0, blocked:[], pois:{
+      Home:[20,20], Office:[40,22], Cafe:[28,36], Plaza:[32,32], Market:[48,40], Gym:[52,28],
+      Aula_101:[16,48], Aula_202:[24,52]
+    }, seed:42}};
+    ticks=[]; buildWorld();
+  }
+};
+$('play').onclick=()=>{playing=!playing; $('play').textContent=playing?'⏸ Pausa':'▶ Play'};
+$('scrub').oninput=e=>{idx=+e.target.value; rebuild(idx)};
+
+function makeLabel(text, tint='#e8f0ff'){
+  const c=document.createElement('canvas'); c.width=512; c.height=96;
+  const g=c.getContext('2d');
+  g.clearRect(0,0,512,96);
+  g.beginPath();
+  if(g.roundRect) g.roundRect(6,10,500,76,10);
+  else g.rect(6,10,500,76);
+  g.fillStyle='rgba(5,8,20,0.82)'; g.fill();
+  g.lineWidth=2.5; g.strokeStyle=tint; g.stroke();
+  g.fillStyle=tint; g.font='bold 32px Orbitron, sans-serif'; g.fillText(text,26,58);
+  const tex=new THREE.CanvasTexture(c); tex.needsUpdate=true;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
+  sp.scale.set(8.5,1.7,1); return sp;
+}
+
+function buildWorld(){
+  while(cityGroup.children.length) cityGroup.remove(cityGroup.children[0]);
+  poiMeshes.length=0;
+  for(const [,o] of agents){
+    scene.remove(o.mesh); scene.remove(o.trail);
+    if(o.ring) scene.remove(o.ring); if(o.tag) scene.remove(o.tag);
+  }
+  agents.clear();
+  if(!header) return;
+
+  const meta=header.metadata||{};
+  const n=meta.agents||50;
+  $('titleHud').querySelector('.sub').textContent=`CITY SIM · ${n} CITIZENS`;
+
+  const pois=meta.pois||{};
+  const poiMeta={};
+  for(const [name,p] of Object.entries(pois)){
+    poiMeta[name]=POI_META[name]||{label:name,h:3,caption:name,color:0xff5678};
+  }
+
+  const seed=hashStr(String(meta.seed||42)+String(meta.fingerprint||''));
+  const {poiMeshes: hits}=populateCity(THREE, {
+    group: cityGroup,
+    gridW: 64,
+    gridH: 64,
+    blocked: meta.blocked||[],
+    pois,
+    seed,
+    poiMeta,
+    theme: 'cyberpunk',
+    roads: false,
+  });
+  poiMeshes.push(...hits);
+
+  for(const [name,p] of Object.entries(pois)){
+    const m=poiMeta[name];
+    const tint='#'+(m.color||0xe879f9).toString(16).padStart(6,'0');
+    const lab=makeLabel(m.label||name, tint);
+    lab.position.set(p[0], (m.h||4)+3.8, p[1]);
+    cityGroup.add(lab);
+  }
+
+  $('tracked').innerHTML='<div class="av" title="tracked A"></div><div class="av" title="tracked B"></div>';
+}
+
+function stackOffset(aid, cellKey, stacks){
+  const i=stacks[cellKey]||0;
+  stacks[cellKey]=i+1;
+  const ring=Math.floor(i/8);
+  const slot=i%8;
+  const ang=(slot/8)*Math.PI*2;
+  const rad=0.35+ring*0.35;
+  return {dx:Math.cos(ang)*rad, dz:Math.sin(ang)*rad, dy:ring*0.15};
+}
+
+function makeNameTag(text){
+  const c=document.createElement('canvas'); c.width=256; c.height=64;
+  const g=c.getContext('2d');
+  g.clearRect(0,0,256,64);
+  g.fillStyle='rgba(15,23,42,0.78)'; g.fillRect(4,8,248,48);
+  g.fillStyle='#f1f5f9'; g.font='20px Share Tech Mono, monospace'; g.fillText(text.slice(0,18),12,40);
+  const tex=new THREE.CanvasTexture(c);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
+  sp.scale.set(3.2,0.8,1); return sp;
+}
+
+function applyExpanded(t, state){
+  for(const e of (t?.events||[])){
+    if(e.type==='snapshot'){
+      const cur=state[e.agent_id]||{type:'snapshot',agent_id:e.agent_id};
+      if(e.delta){ Object.assign(cur,e); cur.delta=false; }
+      else Object.assign(cur,e);
+      state[e.agent_id]=cur;
+    }
+  }
+}
+
+function latestEvents(n){
+  const out=[];
+  for(let i=Math.max(0,n-8);i<=n;i++){
+    for(const e of (ticks[i]?.events||[])){
+      if(e.type==='reflection') out.push(`✦ REFLECT / ${e.agent_id}`);
+      if(e.type==='exam' || e.thought?.includes?.('skill')) out.push(`✦ SKILL / ${e.agent_id||''}`);
+      if(e.type==='hire' || e.type==='job') out.push(`✦ HIRE / ${e.agent_id}`);
+    }
+  }
+  return out.slice(-1)[0]||'';
+}
+
+function rebuild(n){
+  const state={}; for(let i=0;i<=n;i++) applyExpanded(ticks[i], state);
+  const stacks={};
+  for(const a of Object.values(state)){
+    const key=`${a.x|0},${a.y|0}`;
+    a._stack=stackOffset(a.agent_id, key, stacks);
+    upsertAgent(a);
+  }
+  for(const id of [...agents.keys()]) if(!state[id]){
+    const o=agents.get(id); scene.remove(o.mesh); scene.remove(o.trail);
+    if(o.ring) scene.remove(o.ring); if(o.tag) scene.remove(o.tag);
+    agents.delete(id);
+  }
+  renderHud(state);
+  const line=latestEvents(n);
+  const ticker=$('ticker');
+  if(line){ ticker.style.display='block'; ticker.textContent=line; }
+  else ticker.style.display='none';
+}
+
+function upsertAgent(a){
+  let o=agents.get(a.agent_id);
+  if(!o){
+    const mesh=createCitizen(THREE, colors[a.state]||0xffffff, { allowGlb: false });
+    mesh.userData.agent=a;
+    mesh.userData.cyberGlow=true;
+    // Aerial scale: human-size models vanish from camera ~50u up
+    const baseScale = 0.95;
+    mesh.scale.setScalar(baseScale);
+    const trailGeo=new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(a.x,0.05,a.y), new THREE.Vector3(a.x,0.05,a.y)
+    ]);
+    const trail=new THREE.Line(trailGeo, new THREE.LineBasicMaterial({
+      color:0x22d3ee, transparent:true, opacity:0.7
+    }));
+    const ring=new THREE.Mesh(
+      new THREE.TorusGeometry(0.85,0.08,8,24),
+      new THREE.MeshStandardMaterial({color:0xfbbf24, emissive:0xfbbf24, emissiveIntensity:1.6})
+    );
+    ring.rotation.x=Math.PI/2; ring.visible=true;
+    const tag=makeNameTag(a.name||a.agent_id);
+    scene.add(mesh); scene.add(trail); scene.add(ring); scene.add(tag);
+    o={
+      mesh,trail,ring,tag,
+      points:[new THREE.Vector3(a.x,0.05,a.y)],
+      lod:'high', lastX:a.x, lastZ:a.y, moving:false,
+      baseScale: mesh.scale.x
+    };
+    agents.set(a.agent_id,o);
+  }
+  const col=colors[a.state]||0xffffff;
+  tintCitizen(o.mesh, col);
+  const off=a._stack||{dx:0,dz:0,dy:0};
+  const x=a.x+off.dx, z=a.y+off.dz;
+  const dx=x-(o.lastX??x), dz=z-(o.lastZ??z);
+  o.moving=Math.hypot(dx,dz)>0.02;
+  if(o.moving) o.mesh.rotation.y=Math.atan2(dx, dz);
+  o.lastX=x; o.lastZ=z;
+  o.mesh.position.set(x, off.dy, z);
+  o.mesh.userData.agent=a;
+  o.ring.position.set(x, 0.12+off.dy, z);
+  o.ring.visible = true;
+  o.ring.material.color.setHex(col);
+  o.ring.material.emissive.setHex(col);
+  o.tag.position.set(x, 3.4+off.dy, z);
+  o.tag.visible = true;
+  const p=new THREE.Vector3(x,0.05,z);
+  o.points.push(p); if(o.points.length>14) o.points.shift();
+  o.trail.geometry.setFromPoints(o.points);
+  applyLod(o);
+}
+
+function agentLodLevel(o){
+  const mode=$('lod').value;
+  if(mode==='high') return 'high';
+  if(mode==='low') return 'low';
+  return camera.position.distanceTo(o.mesh.position)>70?'low':'high';
+}
+function applyLod(o){
+  const lvl=agentLodLevel(o);
+  if(o.lod===lvl) return;
+  o.lod=lvl;
+  const high=lvl==='high';
+  o.trail.visible=high;
+  o.mesh.visible=true;
+  const base=o.baseScale||1;
+  o.mesh.scale.setScalar(high?base:base*0.85);
+  if(o.tag) o.tag.visible=true;
+}
+function refreshLod(){ for(const o of agents.values()) applyLod(o); }
+$('lod').onchange=()=>refreshLod();
+
+function clockFromTick(tick, dayLen){
+  const day=Math.floor(tick/dayLen)+1;
+  const local=tick%dayLen;
+  const minutes=Math.floor((local/dayLen)*24*60);
+  const hh=String(Math.floor(minutes/60)).padStart(2,'0');
+  const mm=String(minutes%60).padStart(2,'0');
+  return {day, hh, mm};
+}
+
+function renderHud(state){
+  $('scrub').value=idx; $('tick').textContent=`tick ${ticks[idx]?.tick??0}`;
+  if(!header) return;
+  const meta=header.metadata||{};
+  const dayLen=JSON.parse(meta.config||'{}').day_length_ticks||600;
+  const tick=ticks[idx]?.tick??0;
+  const {day,hh,mm}=clockFromTick(tick, dayLen);
+  const buckets={acting:0,learning:0,thinking:0,idle:0,offline:0};
+  const expected=meta.agents||50;
+  for(const a of Object.values(state)){
+    const b=STATE_BUCKET[a.state]||'acting';
+    buckets[b]++;
+  }
+  let thinkingNow=0;
+  for(const e of (ticks[idx]?.events||[])) if(e.type==='reflection') thinkingNow++;
+  buckets.thinking=thinkingNow;
+  buckets.offline=Math.max(0, expected-Object.keys(state).length);
+  $('hud').innerHTML=`<div class="day">DAY ${day} · ${hh}:${mm}</div>
+    <div class="row k-acting"><span>acting</span><b>${buckets.acting}</b></div>
+    <div class="row k-learning"><span>learning</span><b>${buckets.learning}</b></div>
+    <div class="row k-thinking"><span>thinking</span><b>${buckets.thinking}</b></div>
+    <div class="row k-idle"><span>idle</span><b>${buckets.idle}</b></div>
+    <div class="row k-offline"><span>offline</span><b>${buckets.offline}</b></div>`;
+}
+
+function pickables(){
+  const agentMeshes=[...agents.values()].map(x=>x.mesh);
+  return agentMeshes.concat(poiMeshes);
+}
+
+view.addEventListener('pointermove', ev=>{
+  const r=renderer.domElement.getBoundingClientRect();
+  mouse.x=((ev.clientX-r.left)/r.width)*2-1; mouse.y=-((ev.clientY-r.top)/r.height)*2+1;
+  raycaster.setFromCamera(mouse,camera);
+  const hits=raycaster.intersectObjects(pickables(), true);
+  if(hits.length){
+    let obj=hits[0].object;
+    while(obj && !obj.userData.agent && !obj.userData.poi && obj.parent) obj=obj.parent;
+    tip.style.display='block';
+    tip.style.left=(ev.clientX-r.left+12)+'px'; tip.style.top=(ev.clientY-r.top+12)+'px';
+    if(obj?.userData?.agent){
+      const a=obj.userData.agent;
+      tip.textContent=`${a.agent_id} ${a.state} job=${a.job||'-'}`;
+    } else if(obj?.userData?.poi || hits[0].object.userData.poi){
+      const p=obj?.userData?.poi || hits[0].object.userData.poi;
+      tip.textContent=p.label;
+    } else tip.style.display='none';
+  } else tip.style.display='none';
+});
+
+view.addEventListener('click', ()=>{
+  raycaster.setFromCamera(mouse,camera);
+  const hits=raycaster.intersectObjects(poiMeshes, true);
+  const cap=$('caption');
+  if(hits.length){
+    let obj=hits[0].object;
+    while(obj && !obj.userData.poi && obj.parent) obj=obj.parent;
+    const p=obj?.userData?.poi || hits[0].object.userData.poi;
+    if(!p) return;
+    cap.style.display='block';
+    cap.innerHTML=`<b>${(p.label||'').toUpperCase()}</b>${p.caption||''}`;
+    setTimeout(()=>{cap.style.display='none'}, 3500);
+  }
+});
+
+function loop(t){
+  if(!last) last=t; const dt=t-last; last=t;
+  if(playing && ticks.length){
+    acc+=dt*+$('speed').value; const period=1000/(header?.metadata?.tick_rate_hz||15);
+    while(acc>=period){ acc-=period; idx=(idx+1)%ticks.length; rebuild(idx); }
+  }
+  for(const o of agents.values()){
+    animateCitizen(o.mesh, dt, o.moving);
+  }
+  controls.update(); refreshLod(); composer.render(); requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// Load real GLB citizen mesh (Khronos CesiumMan), then open city preview
+(async () => {
+  const ok = await loadCitizenGlb(THREE, GLTFLoader, { male: [], female: [] });
+  const hint = $('assetHint');
+  if (hint) {
+    hint.textContent = ok
+      ? 'Cyberpunk city · no roads · cittadini GLB · edifici/alberi neon'
+      : 'Cyberpunk city · no roads · cittadini procedurali · drop GLB in assets/models/';
+  }
+  $('demo').click();
+})();
+</script>
+</body>
+</html>

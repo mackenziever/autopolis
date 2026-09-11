@@ -1,0 +1,37 @@
+{
+  "python": "3.14.6 (tags/v3.14.6:c63aec6, Jun 10 2026, 10:26:10) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "passed": true,
+  "results": [
+    {
+      "name": "compile",
+      "returncode": 0,
+      "seconds": 0.15201489999890327
+    },
+    {
+      "name": "tests",
+      "returncode": 0,
+      "seconds": 2.8314765999966767
+    },
+    {
+      "name": "simulation_a",
+      "returncode": 0,
+      "seconds": 1.1833981999952812
+    },
+    {
+      "name": "simulation_b",
+      "returncode": 0,
+      "seconds": 1.1799413999979151
+    },
+    {
+      "name": "determinism",
+      "returncode": 0,
+      "seconds": 0.06643150000309106
+    },
+    {
+      "name": "inspect",
+      "returncode": 0,
+      "seconds": 0.15163739999843528
+    }
+  ]
+}

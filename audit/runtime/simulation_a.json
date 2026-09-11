@@ -1,0 +1,18 @@
+{
+  "name": "simulation_a",
+  "args": [
+    "C:\\Python314\\python.exe",
+    "main.py",
+    "--agents",
+    "50",
+    "--ticks",
+    "600",
+    "--fast",
+    "--log",
+    "data/audit_a.msgpack"
+  ],
+  "returncode": 0,
+  "seconds": 1.1833981999952812,
+  "stdout": "[ENGINE] agenti=50 seed=42 target=15Hz start=0 spatial_hash=False delta_log=False\n[ENGINE] {'ticks': 600, 'start_tick': 0, 'end_tick': 600, 'wall_seconds': 0.9373039999991306, 'wall_hz': 640.1338306467875, 'compute_mean_ms': 1.5531066666274758, 'compute_p95_ms': 5.454199999803677, 'llm': {'live': 0, 'replay': 0, 'fallback': 0, 'errors': 0, 'budget_denied': 0, 'input_tokens': 0, 'output_tokens': 0}, 'spatial_hash': False, 'delta_log': None, 'metrics_port': None}\n",
+  "stderr": ""
+}

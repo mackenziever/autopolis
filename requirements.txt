@@ -1,0 +1,23 @@
+# Core minimo
+numpy>=2.0,<3
+msgpack>=1.0,<2
+# Living City HTTP/WS
+starlette>=0.38,<1
+uvicorn>=0.30,<1
+websockets>=12,<16
+# Test
+pytest>=8,<10
+pytest-asyncio>=0.24,<1
+httpx>=0.27,<1  # richiesto da starlette.testclient (tests/test_living_server_health.py)
+# E2E opzionale (pip install '.[e2e]' oppure le righe sotto)
+# playwright>=1.40
+# pytest-playwright>=0.5,<1
+# Acceleratori e integrazioni opzionali (decommentare/installare per produzione)
+# uvloop>=0.21; platform_system != "Windows"
+# scipy>=1.14
+# rustworkx>=0.16
+# usearch>=2.16
+# polars>=1.0
+# pyzmq>=26
+# litellm>=1.60
+# bandit>=1.7

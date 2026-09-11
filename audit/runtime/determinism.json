@@ -1,0 +1,13 @@
+{
+  "name": "determinism",
+  "args": [
+    "C:\\Python314\\python.exe",
+    "check_determinism.py",
+    "data/audit_a.msgpack",
+    "data/audit_b.msgpack"
+  ],
+  "returncode": 0,
+  "seconds": 0.06643150000309106,
+  "stdout": "A 7176cc21d2c7c1669ae87cf8863154747e4efcb1e4c4a4aa0f797362fe7a2a2f\nB 7176cc21d2c7c1669ae87cf8863154747e4efcb1e4c4a4aa0f797362fe7a2a2f\nDETERMINISTIC\n",
+  "stderr": ""
+}

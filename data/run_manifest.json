@@ -1,0 +1,45 @@
+{
+  "agents": 50,
+  "created_unix": 1789083240.081971,
+  "extra": {
+    "delta_log": {
+      "delta_events": 22617,
+      "deltas": 590,
+      "full_events": 500,
+      "keyframes": 10
+    },
+    "hmac": null,
+    "llm": {
+      "budget_denied": 0,
+      "errors": 0,
+      "fallback": 0,
+      "input_tokens": 0,
+      "last_latency_ms": 0.0,
+      "live": 0,
+      "output_tokens": 0,
+      "replay": 192,
+      "tier0_skipped_escalation": 0
+    },
+    "perf": {
+      "cognitive_worker": null,
+      "log_bytes": 3329224,
+      "overruns": 1,
+      "path_cache": {
+        "hits": 5,
+        "misses": 482,
+        "size": 425
+      },
+      "zmq_dropped": 0
+    },
+    "spatial_backend": "python",
+    "spatial_hash": true
+  },
+  "fingerprint": "b821ae1e779b3151",
+  "log_path": "data/simulation_replay.msgpack",
+  "log_sha256": "2aa242536cee5458561b87ec97e28070a8274484930da3d32d3972cb55347f21",
+  "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.41",
+  "python": "3.12.14",
+  "schema": 1,
+  "seed": 42,
+  "ticks_completed": 600
+}

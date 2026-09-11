@@ -1,0 +1,15 @@
+{
+  "name": "compile",
+  "args": [
+    "C:\\Python314\\python.exe",
+    "-m",
+    "compileall",
+    "-q",
+    "-f",
+    "."
+  ],
+  "returncode": 0,
+  "seconds": 0.3628413999977056,
+  "stdout": "",
+  "stderr": ""
+}

@@ -1,0 +1,221 @@
+services:
+  simulator:
+    build: .
+    init: true
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    volumes: ["./data:/app/data"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9100/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    command:
+      [
+        "python",
+        "main.py",
+        "--agents",
+        "50",
+        "--ticks",
+        "600",
+        "--hz",
+        "15",
+        "--fast",
+        "--metrics",
+        "--metrics-port",
+        "9100",
+        "--spatial-hash",
+        "--delta-log",
+        "--keyframe-every",
+        "60",
+        "--log",
+        "data/simulation_replay.msgpack",
+      ]
+
+  # Stack cognitivo opt-in: docker compose --profile llm up -d
+  freellmapi:
+    profiles: ["llm"]
+    image: ghcr.io/tashfeenahmed/freellmapi:latest
+    env_file:
+      - .env.freellmapi
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      ENCRYPTION_KEY: "${ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}"
+      # Docs: inject system handoff when router switches model mid-session
+      FREELLMAPI_CONTEXT_HANDOFF: "${FREELLMAPI_CONTEXT_HANDOFF:-on_model_switch}"
+    ports:
+      - "${HOST_BIND:-127.0.0.1}:${FREELLM_PORT:-3001}:3001"
+    volumes:
+      - freellmapi-data:/app/server/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/api/ping').then((res) => { if (!res.ok) process.exit(1); }).catch(() => process.exit(1));",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  alveare:
+    profiles: ["llm"]
+    build: .
+    init: true
+    restart: unless-stopped
+    environment:
+      ALVEARE_HOST: "0.0.0.0"
+      ALVEARE_PORT: "9200"
+      ALVEARE_DATA: "/data"
+      CIVITAS_LLM_API_BASE: "http://freellmapi:3001/v1"
+      CIVITAS_LLM_API_KEY: "${CIVITAS_LLM_API_KEY:-}"
+      CIVITAS_EMBED_MODEL: "${CIVITAS_EMBED_MODEL:-}"
+    ports:
+      - "127.0.0.1:9200:9200"
+    volumes:
+      - ./data/alveare:/data
+      - ${AETHER_VAULT_PATH:-./vault}:/vault:ro
+    command: ["python", "-m", "knowledge.server"]
+    depends_on:
+      freellmapi:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9200/health')",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  simulator-llm:
+    profiles: ["llm"]
+    build: .
+    init: true
+    restart: unless-stopped
+    ports:
+      - "9101:9100"
+    environment:
+      CIVITAS_LLM_API_BASE: "http://freellmapi:3001/v1"
+      # FreeLLMAPI: usa un id catalogo o "auto" (fallback chain dashboard).
+      CIVITAS_LLM_MODEL: "${CIVITAS_LLM_MODEL:-auto}"
+      CIVITAS_LLM_API_KEY: "${CIVITAS_LLM_API_KEY:-}"
+      CIVITAS_ALVEARE_URL: "http://alveare:9200"
+    volumes: ["./data:/app/data"]
+    depends_on:
+      freellmapi:
+        condition: service_healthy
+      alveare:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9100/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    command:
+      [
+        "python",
+        "main.py",
+        "--agents",
+        "20",
+        "--ticks",
+        "600",
+        "--hz",
+        "15",
+        "--fast",
+        "--llm",
+        "--cognitive-worker",
+        "--metrics",
+        "--metrics-port",
+        "9100",
+        "--spatial-hash",
+        "--delta-log",
+        "--alveare-url",
+        "http://alveare:9200",
+        "--log",
+        "data/simulation_replay_llm.msgpack",
+      ]
+
+  living:
+    profiles: ["llm"]
+    build: .
+    init: true
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9300:9300"
+    # Secrets / defaults from .env.llm (gitignored); Docker DNS overrides below.
+    # .env.providers (gitignored, opzionale) porta MAYOR_LLM_API_KEY/
+    # MAYOR_LLM_API_BASE/MAYOR_LLM_MODEL per il sindaco (agents/mayor.py) —
+    # required:false cosi' il servizio parte comunque se il file non esiste
+    # (sindaco semplicemente disabilitato, vedi engine/tick_engine.py).
+    env_file:
+      - .env.llm
+      - path: .env.providers
+        required: false
+    environment:
+      CIVITAS_LLM_API_BASE: "http://freellmapi:3001/v1"
+      CIVITAS_LLM_MODEL: "${CIVITAS_LLM_MODEL:-auto}"
+      CIVITAS_LLM_API_KEY: "${CIVITAS_LLM_API_KEY:-}"
+      CIVITAS_ALVEARE_URL: "http://alveare:9200"
+      LIVING_PORT: "9300"
+      # --hermes bypassa il proxy FreeLLM (auto-routing spesso in errore,
+      # vedi audit/GAP_INVENTORY.md) e parla direttamente con Hermes
+      # sull'host. host.docker.internal serve per uscire dal container.
+      HERMES_V1: "http://host.docker.internal:8081/v1"
+      HERMES_MODEL: "qwable-9b"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # vault rw: day_loop writes session notes under vault/05-SESSIONS
+    volumes: ["./data:/app/data", "./vault:/app/vault", "./viewer:/app/viewer"]
+    depends_on:
+      freellmapi:
+        condition: service_healthy
+      alveare:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9300/health')",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    command:
+      [
+        "python",
+        "-m",
+        "living_server",
+        "--agents",
+        "12",
+        "--hz",
+        "15",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "9300",
+        "--hermes",
+        "--log",
+        "data/living_replay.msgpack",
+        "--checkpoint",
+        "data/living.checkpoint.msgpack",
+      ]
+
+volumes:
+  freellmapi-data:

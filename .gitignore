@@ -1,0 +1,37 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.env.*
+!.env.*.example
+data/*.msgpack
+data/*.jsonl
+data/*.parquet
+data/alveare/
+data/paperclip_city/
+
+.env.freellm.local
+.env.freellm.secret
+
+.env.providers
+
+# Stato locale di tooling (Ruflo/claude-flow, Claude Code) — non fa parte del progetto
+.claude-flow/
+.swarm/
+.claude/
+.cursor/
+AGENTS.md
+CLAUDE.md
+ops/CURSOR_CLAUDE_COLLAB.md
+ops/COMPANY.md
+ruvector.db
+*.db
+*.db-shm
+*.db-wal
+docs/video/logo-reveal.mp4
+
+# Output live della simulazione (living/alveare), cresce senza limite
+vault/04-LEARNINGS/
+vault/00-META/KNOWLEDGE-CATALOG.md
+vault/06-MEMORY/wiki/discovered/

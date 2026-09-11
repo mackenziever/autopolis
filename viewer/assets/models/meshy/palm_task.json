@@ -1,0 +1,127 @@
+﻿{
+    "code":  "OK",
+    "requestId":  "Root=1-6aa2ffbf-400bb89b361d1e283c6b08e2",
+    "result":  {
+                   "id":  "01999f3e-2a4a-7ede-b05d-650e7cf16d8a",
+                   "name":  "",
+                   "userId":  "1cc53509-967a-4648-ad79-db227a68ab13",
+                   "status":  "SUCCEEDED",
+                   "progress":  0,
+                   "phase":  "texture",
+                   "showcaseId":  "01999f40-b83d-794a-87ec-9100e7fa916d",
+                   "showcaseSlug":  "",
+                   "labels":  null,
+                   "retryCount":  0,
+                   "mode":  "texture",
+                   "fromAgent":  false,
+                   "createdAt":  1759313277359,
+                   "updatedAt":  1777311173633,
+                   "addedAt":  0,
+                   "isDownloaded":  true,
+                   "isPublished":  true,
+                   "canPublishToCommunity":  true,
+                   "isNSFW":  false,
+                   "sketchfabModelUid":  "",
+                   "coarseModelId":  "",
+                   "rootId":  "01999f3a-c5a1-78e3-8ca9-7eee603a796b",
+                   "parent":  "01999f3a-c5a1-78e3-8ca9-7eee603a796b",
+                   "license":  "cc0",
+                   "workspaceId":  "",
+                   "sceneId":  "",
+                   "topology":  "triangle",
+                   "triangleCount":  454673,
+                   "vertexCount":  254486,
+                   "faceCount":  454673,
+                   "aabb":  [
+                                -0.665045976638794,
+                                -0.9520679712295532,
+                                -0.6807330250740051,
+                                0.6568610072135925,
+                                0.9512730240821838,
+                                0.6793680191040039
+                            ],
+                   "comments":  0,
+                   "downloads":  0,
+                   "rating":  null,
+                   "args":  {
+                                "draft":  {
+                                              "aiModel":  "meshy-5.3",
+                                              "modelType":  "standard",
+                                              "topology":  "",
+                                              "prompt":  "Palm Tree",
+                                              "imageId":  "ea8941e9fdb3c8b4293ca2b5433d7867be48a5e4.png",
+                                              "imageIds":  [
+                                                               "ea8941e9fdb3c8b4293ca2b5433d7867be48a5e4.png"
+                                                           ],
+                                              "symmetryMode":  0,
+                                              "seed":  4101710471,
+                                              "license":  "",
+                                              "imageUrl":  "https://api.meshy.ai/misc/cdn-images/1cc53509-967a-4648-ad79-db227a68ab13/uploads/ea8941e9fdb3c8b4293ca2b5433d7867be48a5e4.png?sign=1789171200-98b8021bb5a683dec2e93e369483ae0b",
+                                              "imageUrls":  [
+                                                                "https://api.meshy.ai/misc/cdn-images/1cc53509-967a-4648-ad79-db227a68ab13/uploads/ea8941e9fdb3c8b4293ca2b5433d7867be48a5e4.png?sign=1789171200-98b8021bb5a683dec2e93e369483ae0b"
+                                                            ]
+                                          },
+                                "generate":  {
+                                                 "draftIds":  null,
+                                                 "modelId":  "",
+                                                 "name":  "",
+                                                 "enableOriginalUV":  false,
+                                                 "license":  ""
+                                             },
+                                "remesh":  null,
+                                "texture":  {
+                                                "prompt":  "Ensure it is textures like a palm tree, realistic wood on the wood, and realistic leaves",
+                                                "imageId":  "",
+                                                "imageIds":  null,
+                                                "seed":  1170440967,
+                                                "artStyle":  "realistic",
+                                                "aiModel":  "meshy-5.3",
+                                                "enablePBR":  true,
+                                                "srMode":  "none",
+                                                "textureSize":  0,
+                                                "imageUrl":  "https://api.meshy.ai/misc/cdn-images/1cc53509-967a-4648-ad79-db227a68ab13/tasks/01999f3e-2a4a-7ede-b05d-650e7cf16d8a/output/ea8941e9fdb3c8b4293ca2b5433d7867be48a5e4.png?sign=1789171200-3707ef76b1f697481028daee8535f0fc"
+                                            },
+                                "stylize":  null,
+                                "animate":  null,
+                                "textToImage":  null,
+                                "image":  null,
+                                "threeDToImage":  null,
+                                "video":  null,
+                                "extract3DBody":  null
+                            },
+                   "result":  {
+                                  "previewUrl":  "https://api.meshy.ai/misc/cdn-images/1cc53509-967a-4648-ad79-db227a68ab13/tasks/01999f3e-2a4a-7ede-b05d-650e7cf16d8a/output/preview.png?sign=1789171200-01e3217984d36e43b5f7f594ab396d15",
+                                  "previewLogoUrl":  "https://api.meshy.ai/misc/cdn-images/1cc53509-967a-4648-ad79-db227a68ab13/tasks/01999f3e-2a4a-7ede-b05d-650e7cf16d8a/output/preview_watermark.png?sign=1789171200-805e456a1114a9d422ab758c617b7a1b",
+                                  "draft":  null,
+                                  "generate":  null,
+                                  "texture":  {
+                                                  "modelUrl":  "https://api.meshy.ai/misc/cdn-models/1cc53509-967a-4648-ad79-db227a68ab13/tasks/01999f3e-2a4a-7ede-b05d-650e7cf16d8a/output/model.meshy?sign=1789171200-e1dae22a41cfd0ca6cb3ea43cd610996",
+                                                  "quadJsonUrl":  "https://assets.meshy.ai/1cc53509-967a-4648-ad79-db227a68ab13/tasks/01999f3e-2a4a-7ede-b05d-650e7cf16d8a/output/model.json?Expires=1789171200\u0026Signature=Ub3btXqe0H-wC3VqgN6LF71D6Da9IGNmctE2jIkgvuVX0CkoAiuirjtwuFijtoRcaOmiV0ZuQ4XqNNzR6DbN8HnvnrhLvD1jt4MMRo0Ucmig0TfMlry3D53WmHlYWWsX-~v0HkyBRLzwaFvqcUPgs2VRuGvd5N84y5peNRira0-QmLhAIXVUYQ6DxmX-tvwTKrBe~T7LsIEgz3rIcgFaMCHPVEQqkzrs5DBpm8XrcMdVfz6Db9IJohgXRtCkPnba9hY9sy~LmoMWO7BD8t5FqnDXt5EXbhxAKk9Pit84CV3R4BnI8iKQZKN5d3tEnnqhuHDDjp-MqoKtL3czk3rwDw__\u0026Key-Pair-Id=K1VGYTHIYLM9UM",
+                                                  "textureUrls":  [
+                                                                      {
+                                                                          "colorMapUrl":  "https://api.meshy.ai/misc/cdn-images/1cc53509-967a-4648-ad79-db227a68ab13/tasks/01999f3e-2a4a-7ede-b05d-650e7cf16d8a/output/texture_0.png?sign=1789171200-dcaad9a9be70f9e4c229e1fb6cfe36e2",
+                                                                          "metallicMapUrl":  "https://api.meshy.ai/misc/cdn-images/1cc53509-967a-4648-ad79-db227a68ab13/tasks/01999f3e-2a4a-7ede-b05d-650e7cf16d8a/output/texture_0_metallic.png?sign=1789171200-7a153e5b9d00fa72682f8e8062e574d0",
+                                                                          "roughnessMapUrl":  "https://api.meshy.ai/misc/cdn-images/1cc53509-967a-4648-ad79-db227a68ab13/tasks/01999f3e-2a4a-7ede-b05d-650e7cf16d8a/output/texture_0_roughness.png?sign=1789171200-4efc0d480b92db6cccf6024e554de3e8",
+                                                                          "normalMapUrl":  "https://api.meshy.ai/misc/cdn-images/1cc53509-967a-4648-ad79-db227a68ab13/tasks/01999f3e-2a4a-7ede-b05d-650e7cf16d8a/output/texture_0_normal.png?sign=1789171200-38cbf7a689d44da0f1d820b649bcb89a"
+                                                                      }
+                                                                  ]
+                                              },
+                                  "stylize":  null,
+                                  "animate":  null,
+                                  "textureEdit":  null,
+                                  "smartHeal":  null,
+                                  "textToImage":  null,
+                                  "threeDToImage":  null,
+                                  "video":  null,
+                                  "image":  null,
+                                  "extract3DBody":  null
+                              },
+                   "errMsg":  "",
+                   "errorCode":  "",
+                   "errorDetail":  "",
+                   "author":  {
+                                  "uid":  "s17593129341cc53",
+                                  "nickname":  "oskar.kakareko"
+                              }
+               }
+}

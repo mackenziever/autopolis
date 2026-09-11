@@ -1,0 +1,18 @@
+{
+  "source": "seed_example",
+  "blueprints": [
+    {
+      "id": "makerspace",
+      "poi": "MakerSpace",
+      "xy": [50, 28],
+      "kind": "tech",
+      "requires": {
+        "skill_webgl": 1,
+        "lessons": 6,
+        "built": 1
+      },
+      "unlocks": {},
+      "description": "Maker space — prototipi cittadini (esempio Sakana-ready)"
+    }
+  ]
+}
